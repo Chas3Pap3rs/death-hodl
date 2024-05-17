@@ -1,0 +1,30 @@
+{% load static %}
+
+<nav class="navbar navbar-expand-md">
+    <img src="{% static '/images/deathhodl-logo.png' %}" height="50px" alt="logo" class="custom-nav-logo" />
+    <a class="navbar-brand mr-2 my-2 my-sm-0 custom-nav-logo" href="{% url 'home' %}">Death HODL</a>
+  
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span id="navbar-icon" class="fa-solid fa-caret-down"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav mr-auto">
+        </ul>
+        <ul class="navbar-nav">
+          {% if user.is_authenticated %}
+          <div class="btn-group" role="group">
+            <a class="portfolio btn btn-outline-light my-2 my-sm-0 mr-2" href="{% url 'portfolio' %}">View My Wallet</a>
+            <a class="logout btn btn-outline-light my-2 my-sm-0 mr-2" href="{% url 'logout' %}">Logout</a>  
+          </div>
+      
+          
+          {% else %}
+          <div class="btn-group" role="group">
+            <a class="btn btn-outline-light my-2 my-sm-0 mr-2" href="{% url 'login' %}">Login</a>
+            <a class="btn btn-outline-light my-2 my-sm-0" href="{% url 'signup' %}">Signup</a>
+          </div>
+          {% endif %}
+        </ul>
+      </div>
+    </nav>
+  
