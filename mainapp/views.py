@@ -1,4 +1,5 @@
 import requests
+from requests import Request, Session
 from django.contrib import auth, messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
