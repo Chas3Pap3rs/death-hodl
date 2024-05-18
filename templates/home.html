@@ -59,9 +59,12 @@ Casa de la Muerte
           </div>
 
           <div class="crypto-info">
-            <p><b>Rank</b>: {{obj.market_cap_rank}}</p>
+            <p>
+              {% comment %} <b>Rank</b>: {{obj.market_cap_rank}} &nbsp;&nbsp; {% endcomment %}
+              <b>Price</b>: {{obj.current_price}}
+            </p>
+
             <p><b>Market</b> Cap: {{obj.market_cap}}</p>
-            <p><b>Price</b>: {{obj.current_price}}</p>
             <p><b>Price Change 24H</b>: {{obj.price_change_24h|floatformat:5 }}
               {% if obj.price_change_percentage_24h > 0 %}
                 <i class="fa fa-arrow-up green-arrow"></i>

@@ -36,11 +36,8 @@ body {
   background-color: #252524 !important;
   background: #252524;
   font-family: 'Pricedown Bl', sans-serif;
-  /* background-image: linear-gradient(315deg, #130f40 0%, #000000 74%) !important; */
-  /* background-repeat: no-repeat !important;
-  background-attachment: fixed !important;
-  */ background-size: cover !important; /*
-  min-height: 100vh !important; */
+  background-size: cover !important;
+  /* min-height: 100vh !important; */
 }
 
 h2, h1, th, tr, thead{
@@ -119,11 +116,9 @@ p {
     columns: 6;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 
-    &:empty:not(:is(:before, :after)) {
+    /* &:empty:not(:is(:before, :after)) {
         display: none;
-    }
-
-  
+    } */
 }
 
 .crypto-item {
@@ -162,7 +157,7 @@ p {
 }
 
 .crypto-item:hover {
-  box-shadow: 0px .5px 10px #B99A1D;
+  box-shadow: 0px .5px 10px #FEAA63;
 }
 
 .crypto-item-header {
@@ -208,6 +203,7 @@ p {
 .table-header {
   font-family: 'Pricedown Bl', sans-serif;
   color: #FEAA63;
+  user-select: none;
 }
 
 .tt-menu {
@@ -296,7 +292,18 @@ footer {
   color: antiquewhite;
   text-align: center;
   z-index: 1;
-  outline: 1.5px inset black !important;
+  box-shadow : 0px -7.5px 4px -4px black,
+  0px 0px 10px 5px rgba(0,0,0,0.6);
+  border: 1.5px 0px outset black;
+  border-top: .5px inset black;
+  border-top-left-radius: 0px;
+  border-top-right-radius: 0px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.copy-right.text-center {
+  margin-top: 7.5px;
 }
 
 
@@ -344,6 +351,7 @@ td {
   padding: 0.75rem;
   vertical-align: middle;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
+  bord
 }
 
 th {
