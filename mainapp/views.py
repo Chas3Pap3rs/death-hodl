@@ -17,6 +17,9 @@ from django.utils.http import urlsafe_base64_decode
 from .forms import CustomUserCreationForm
 from .models import Cryptocurrency, Portfolio, Profile, Referal
 
+# from django_plotly_dash import DjangoDash, DashAppView
+# from . import crypto_charts_dash  # import your Dash app
+
 
 def login_view(request):
     # check if user is already logged in
@@ -320,4 +323,12 @@ def delete_from_portfolio_view(request, pk):
     messages.warning(request, f'{crypto_currency.name} has been deleted from your portfolio.')
     
     return redirect('portfolio')
-    
+
+# @login_required(login_url="login")
+# def charts_view(request):
+#     # Your logic to display charts (placeholder for now)
+#     return render(request, 'charts.html')
+
+# @login_required(login_url="login")
+# def charts(request):
+#     return render(request, 'charts.html')

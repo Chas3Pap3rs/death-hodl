@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',   
+    'django.contrib.staticfiles',
+    'django_plotly_dash.apps.DjangoPlotlyDashConfig',   
 ]
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"

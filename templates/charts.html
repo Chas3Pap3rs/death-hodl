@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}
+Crypto Charts
+{% endblock title %}
+
+
+{% block content %}
+{% comment %} <div id='crypto-chart-container'>
+
+    {% load plotly_dash %}
+    {% plotly_app name="CryptoCharts" %}
+
+</div> {% endcomment %}
+
+{% comment %} <input type="hidden" id="crypto-chart-app" value="{{ __name__ }}">  # replace with your app name
+
+<script>
+    const app_name = document.getElementById('crypto-chart-app').value;
+    const root = document.getElementById('crypto-chart-container');
+    const app = new dash.Dash(app_name, element=root);
+
+</script> {% endcomment %}
+
+{% endblock content %}

@@ -16,6 +16,11 @@ urlpatterns = [
 
     # wallet page
     path("portfolio/", views.portfolio_view, name="portfolio"),
+
+    #charts page
+    # path('charts/', views.charts, name='charts'),
+    #django_plotly_dash
+    # path('django_plotly_dash/', include('django_plotly_dash.urls')),
     
     # CRUD operations on cryptos
     path("search/", views.search_view, name="search"),
