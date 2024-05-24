@@ -1,4 +1,6 @@
+import json
 import requests
+import pandas as pd
 from requests import Request, Session
 from django.contrib import auth, messages
 from django.contrib.auth import authenticate, login, logout
@@ -9,16 +11,16 @@ from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import PermissionDenied
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseNotAllowed
+from django.http import HttpResponse, HttpResponseNotAllowed, HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
 from django.template.defaultfilters import slugify
 from django.utils.http import urlsafe_base64_decode
+from django.urls import reverse
 
 from .forms import CustomUserCreationForm
-from .models import Cryptocurrency, Portfolio, Profile, Referal
+from .models import Cryptocurrency, Portfolio, Profile, Referal, User
+from .crypto_charts import CryptoChart
 
-# from django_plotly_dash import DjangoDash, DashAppView
-# from . import crypto_charts_dash  # import your Dash app
 
 
 def login_view(request):
@@ -161,9 +163,10 @@ def portfolio_view(request):
 
 
 def home_view(request):
-    # get the top 10 crypto currencies by market cap
-    top_10_crypto_url_global = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=USD&order=market_cap_desc&per_page=10&page=1&sparkline=true'
-    top_10_crypto_data_global = requests.get(top_10_crypto_url_global).json()
+    # get the top crypto currencies by market cap
+    top_crypto_url_global = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=USD&order=market_cap_desc&per_page=&page=1&sparkline=true'
+    # top_crypto_url_global = 'https://api.binance.us'
+    top_crypto_data_global = requests.get(top_crypto_url_global).json()
 
     # check if user is logged in    
     if request.user.is_authenticated:
@@ -190,14 +193,14 @@ def home_view(request):
         crypto_price_changes = dict(zip(names, prices))
             
         context = {
-            'top_10_crypto_data_global': top_10_crypto_data_global,
+            'top_crypto_data_global': top_crypto_data_global,
             'user_cryptocurrencies': user_cryptocurrencies,
             'user_portfolio': user_portfolio,
             'crypto_price_changes': crypto_price_changes,
         }
         
     else:
-        context = {'top_10_crypto_data_global': top_10_crypto_data_global}    
+        context = {'top_crypto_data_global': top_crypto_data_global}    
     return render(request, 'home.html', context)
 
 
@@ -324,11 +327,55 @@ def delete_from_portfolio_view(request, pk):
     
     return redirect('portfolio')
 
-# @login_required(login_url="login")
-# def charts_view(request):
-#     # Your logic to display charts (placeholder for now)
-#     return render(request, 'charts.html')
+# def chart_view(request):
+#     plot_div = CryptoChart()
+#     return render(request, "charts.html", context={'plot_div': plot_div})
 
-# @login_required(login_url="login")
-# def charts(request):
-#     return render(request, 'charts.html')
+def fetch_ohlcv_data(network_id, pool_id, interval="hour"):
+    url = f"https://pro-api.coingecko.com/api/v3/onchain/networks/{network_id}/pools/{pool_id}/ohlcv/{interval}"
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return []
+def parse_ohlcv_data(json_payload):
+    # Initialize an empty list to store all ohlcv data
+    all_ohlcv_data = []
+
+    # Loop over each dictionary in json_payload
+    for data_dict in json_payload:
+        # Access the "ohlcv_list" in the "attributes" dictionary
+        ohlcv_list = data_dict.get("attributes", {}).get("ohlcv_list", [])
+
+        # Check if ohlcv_list is not empty
+        if ohlcv_list:
+            # Create a DataFrame from the ohlcv_list
+            columns = ["timestamp", "open", "high", "low", "close", "volume"]
+            df = pd.DataFrame(ohlcv_list, columns=columns)
+            df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s")
+
+            # Append the DataFrame to the all_ohlcv_data list
+            all_ohlcv_data.append(df)
+
+    # Check if all_ohlcv_data is not empty before concatenating
+    if all_ohlcv_data:
+        final_df = pd.concat(all_ohlcv_data)
+    else:
+        final_df = pd.DataFrame()
+
+    return final_df
+
+def crypto_chart(request):
+    # Fetch and parse the data
+    json_payload = fetch_ohlcv_data('bitcoin', 'btcusd')
+    print(json_payload)  # Move the print statement here
+    df = parse_ohlcv_data(json_payload)
+
+    # Convert the DataFrame to a format that can be easily passed to the template
+    data = df.to_dict('records')
+
+    return render(request, 'charts.html', {'data': data})
+
+
+

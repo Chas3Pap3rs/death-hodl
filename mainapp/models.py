@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AbstractUser
 from django.db import models
 
 # Override the default User model to make the email unique
@@ -44,3 +44,9 @@ class Portfolio(models.Model):
 
     def __str__(self):
         return f'{self.user.username} - Portfolio: {self.total_value}'
+    
+
+
+
+# Attempting to make charts and trading functionality
+

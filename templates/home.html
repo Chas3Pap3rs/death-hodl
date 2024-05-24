@@ -47,12 +47,12 @@ Casa de la Muerte
 
   <!--GLOBAL CRYPTO CURRENCIES-->
   <div class="row justify-content-center">
-  <h2 class="text-center mt-5 mb-0 custom-heading"> Top 10 Crypto Rankings </h2> 
+  <h2 class="text-center mt-5 mb-0 custom-heading"> Top Crypto Rankings </h2> 
   </div>
   <br><br><br>
   <div class="flex-container">
-    {% if top_10_crypto_data_global %}
-      {% for obj in top_10_crypto_data_global %}
+    {% if top_crypto_data_global %}
+      {% for obj in top_crypto_data_global %}
         <div class="crypto-item">
           <div class="crypto-item-header">
             <img class="crypto-image" src={{obj.image}}>&nbsp;&nbsp;<h3>{{obj.name}}</h3>

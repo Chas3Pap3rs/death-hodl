@@ -4,21 +4,46 @@ Crypto Charts
 {% endblock title %}
 
 
-{% block content %}
-{% comment %} <div id='crypto-chart-container'>
+{% comment %} <head>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
 
-    {% load plotly_dash %}
-    {% plotly_app name="CryptoCharts" %}
+    <div id='crypto-chart-container'>
+        <h1>Crypto Charts</h1>
+    {{ plot_div|safe }}
+</div>  {% endcomment %}
 
-</div> {% endcomment %}
 
-{% comment %} <input type="hidden" id="crypto-chart-app" value="{{ __name__ }}">  # replace with your app name
 
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<div id='crypto-chart-container'></div>
 <script>
-    const app_name = document.getElementById('crypto-chart-app').value;
-    const root = document.getElementById('crypto-chart-container');
-    const app = new dash.Dash(app_name, element=root);
+var data = {{ data|safe }};
+var trace = {
+  x: data.map(row => row.timestamp),
+  close: data.map(row => row.close),
+  high: data.map(row => row.high),
+  low: data.map(row => row.low),
+  open: data.map(row => row.open),
 
-</script> {% endcomment %}
+  increasing: {line: {color: 'blue'}},
+  decreasing: {line: {color: 'grey'}},
 
-{% endblock content %}
+  type: 'candlestick',
+  xaxis: 'x',
+  yaxis: 'y'
+};
+
+var layout = {
+  dragmode: 'zoom',
+  showlegend: false,
+  xaxis: {
+    rangeslider: {
+       visible: false
+    }
+  }
+};
+
+Plotly.newPlot('crypto-chart-container', [trace], layout);
+</script>

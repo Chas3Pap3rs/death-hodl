@@ -274,3 +274,70 @@
 # if __name__ == "__main__":
 #     app.run_server(debug=True)
 #     app.run_server(host="0.0.0.0", debug=True, dev_tools_ui=False, dev_tools_props_check=False, use_reloader=False)
+
+import plotly.graph_objects as go
+import pandas_datareader as pdr
+from datetime import datetime as dt
+from plotly.offline import plot
+
+CRYPTO_NAME = 'BTC-USD'
+
+def get_data():
+    start_date = '2022-01-01'
+    end_date = dt.now().strftime("%Y-%m-%d")
+
+    # try:
+    #     data = pdr.get_data_yahoo(CRYPTO_NAME, start=start_date, end=end_date)
+    # except Exception as e:
+    #     print(f"An error occurred: {e}")
+    #     data = None
+
+    # return data
+
+    try:
+        data = pdr.get_data_yahoo(CRYPTO_NAME, start=start_date, end=end_date)
+    except pdr.DataReaderError as e:
+        print(f"An error occurred fetching data from Yahoo: {e}")
+        data = None
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        data = None
+
+    return data
+
+def CryptoChart():
+    crypto_data = get_data()
+
+    if crypto_data is None:
+        print("Failed to get data")
+        return None
+
+    graph = go.Figure(data = [go.Candlestick(
+                                        x = crypto_data.index,
+                                        open = crypto_data.Open,
+                                        close = crypto_data.Close,
+                                        high = crypto_data.High,
+                                        low = crypto_data.Low,
+                                        name = 'line 1',
+                                        increasing_line_color = 'blue',
+                                        decreasing_line_color = 'grey'),
+                                go.Scatter(
+                                    x = crypto_data.index,
+                                    y = crypto_data.Close.rolling(window=30).mean(),
+                                    name = 'line 2',
+                                    mode = 'lines',
+                                    line = {'color': '#CD00FF'}
+                                )])
+
+    graph.update_layout(
+        title = 'Graph for {} - made by DJ Khalid'.format(CRYPTO_NAME),
+        xaxis_title = 'Date',
+        yaxis_title = 'Price',
+        xaxis_rangeslider_visible = False
+    )
+
+    graph.update_yaxes(tickprefix = '$')
+
+    plot_div = plot(graph, output_type='div', include_plotlyjs=False)
+    return plot_div
+

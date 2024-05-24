@@ -1,8 +1,11 @@
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
-from django.urls import path
+from django.urls import path, reverse_lazy
+from django.views.generic import RedirectView
 
 from . import views
+from .views import crypto_chart
+
 
 urlpatterns = [
     path("", views.home_view, name="home"),
@@ -21,6 +24,7 @@ urlpatterns = [
     # path('charts/', views.charts, name='charts'),
     #django_plotly_dash
     # path('django_plotly_dash/', include('django_plotly_dash.urls')),
+    path('charts/', crypto_chart, name='charts'),
     
     # CRUD operations on cryptos
     path("search/", views.search_view, name="search"),
