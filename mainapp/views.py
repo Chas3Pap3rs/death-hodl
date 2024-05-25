@@ -19,8 +19,8 @@ from django.urls import reverse
 
 from .forms import CustomUserCreationForm
 from .models import Cryptocurrency, Portfolio, Profile, Referal, User
-from .crypto_charts import CryptoChart
 
+from plotly.graph_objs import Candlestick
 
 
 def login_view(request):
@@ -334,55 +334,72 @@ def delete_from_portfolio_view(request, pk):
     
     return redirect('portfolio')
 
-# def chart_view(request):
-#     plot_div = CryptoChart()
-#     return render(request, "charts.html", context={'plot_div': plot_div})
-
-def fetch_ohlcv_data(network_id, pool_id, interval="hour"):
-    url = f"https://pro-api.coingecko.com/api/v3/onchain/networks/{network_id}/pools/{pool_id}/ohlcv/{interval}"
-    response = requests.get(url)
-
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return []
-def parse_ohlcv_data(json_payload):
-    # Initialize an empty list to store all ohlcv data
-    all_ohlcv_data = []
-
-    # Loop over each dictionary in json_payload
-    for data_dict in json_payload:
-        # Access the "ohlcv_list" in the "attributes" dictionary
-        ohlcv_list = data_dict.get("attributes", {}).get("ohlcv_list", [])
-
-        # Check if ohlcv_list is not empty
-        if ohlcv_list:
-            # Create a DataFrame from the ohlcv_list
-            columns = ["timestamp", "open", "high", "low", "close", "volume"]
-            df = pd.DataFrame(ohlcv_list, columns=columns)
-            df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s")
-
-            # Append the DataFrame to the all_ohlcv_data list
-            all_ohlcv_data.append(df)
-
-    # Check if all_ohlcv_data is not empty before concatenating
-    if all_ohlcv_data:
-        final_df = pd.concat(all_ohlcv_data)
-    else:
-        final_df = pd.DataFrame()
-
-    return final_df
-
 def crypto_chart(request):
-    # Fetch and parse the data
-    json_payload = fetch_ohlcv_data('bitcoin', 'btcusd')
-    print(json_payload)  # Move the print statement here
-    df = parse_ohlcv_data(json_payload)
+  # Available cryptocurrencies (replace with your actual choices)
+  crypto_choices = [
+      ("bitcoin", "Bitcoin (BTC)"),
+      ("ethereum", "Ethereum (ETH)"),
+      ("bnb", "Binance Coin (BNB)"),
+  ]
 
-    # Convert the DataFrame to a format that can be easily passed to the template
-    data = df.to_dict('records')
+  # If form is submitted, process data
+  if request.method == 'POST':
+    cryptocurrency = request.POST.get('cryptocurrency')
+    start_date = request.POST.get('start_date')
+    end_date = request.POST.get('end_date')
 
-    return render(request, 'charts.html', {'data': data})
+    # API call with error handling
+    try:
+      url = f"https://api.coingecko.com/api/v3/coins/{cryptocurrency}/ohlcv/daily?from={start_date}&to={end_date}"
+      response = requests.get(url)
+      response.raise_for_status()  # Raise exception for non-200 status codes
 
+      # Parse JSON data
+      data = response.json()
+      timestamps, prices = zip(*data)
 
+      # Convert timestamps to datetime objects
+      df = pd.DataFrame({'timestamp': timestamps, 'price': prices})
+      df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+
+      # Create candlestick chart with Plotly
+      candlestick = Candlestick(
+          x=df['timestamp'],
+          open=df['price'].iloc[:-1],  # Open price uses previous day's close
+          high=df['price'],
+          low=df['price'],
+          close=df['price'].iloc[1:],  # Close price uses next day's close
+      )
+
+      # Layout options (customize as needed)
+      layout = {
+          'title': f"{cryptocurrency.upper()} Price Chart",
+          'xaxis_title': 'Date',
+          'yaxis_title': 'Price (USD)',
+          'xaxis_rangeslider_visible': False,
+      }
+
+      # Generate chart as a div using Plotly offline capabilities
+      plot_div = plot({'data': [candlestick], 'layout': layout}, output_type='div', include_plotlyjs=False)
+
+    except requests.exceptions.RequestException as e:
+      error_message = f"An error occurred fetching data: {e}"
+      plot_div = None
+
+  else:
+    # Initial form rendering
+    cryptocurrency = None
+    start_date = None
+    end_date = None
+    plot_div = None
+    error_message = None
+
+  return render(request, 'charts.html', {
+      'crypto_choices': crypto_choices,
+      'cryptocurrency': cryptocurrency,
+      'start_date': start_date,
+      'end_date': end_date,
+      'plot_div': plot_div,
+      'error_message': error_message,
+  })
 

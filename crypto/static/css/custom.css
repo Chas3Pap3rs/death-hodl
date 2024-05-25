@@ -72,6 +72,10 @@ p {
   background: #252524;
 }
 
+.container {
+  margin-bottom: 100px;
+}
+
 
 .green-arrow {
   font-size: 18px;
@@ -87,7 +91,7 @@ p {
 .main-container {
   background: #252524;
   font-family: 'Pricedown Bl', sans-serif;
-  color: antiquewhite
+  color: antiquewhite;
 }
 
 .text-uppercase.text-primary.welcome-user-text {
@@ -99,7 +103,7 @@ p {
 .flex-container {
   /* z-index: 1; */
 
-    /* height: auto; */
+    
     font-size: 18px; 
     padding-bottom: 10px;
     padding-right: 30px;
@@ -110,11 +114,16 @@ p {
     border-radius: 10px;
     background-color: #252524;
     box-shadow: inset 0px 0px 10px 5px rgba(0,0,0,0.6);
+
+
     display: grid;
     grid-auto-rows: minmax(auto, 220px);
     column-gap: 1em;
     columns: 6;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+
+    max-height: 1000px !important;
+    overflow-y: scroll !important;
 
     /* &:empty:not(:is(:before, :after)) {
         display: none;
@@ -406,7 +415,9 @@ tbody tr:hover {
 .alert-info {
   /* background-color: #009cb4;
   color: rgb(0, 0, 0) !important; */
+  align-items: center;
   font-weight: bold !important;
+  min-width: 230px;
 }
 
 .alert-danger {
@@ -418,6 +429,9 @@ tbody tr:hover {
 .fancy-color {
   background-color: #4158D0;
   background-image: linear-gradient(43deg, #4158D0 0%, #C850C0 46%, #FFCC70 100%);
+  display: flex; /* Make sure display is set to flex */
+  flex-direction: column; /* Stack elements vertically */
+  align-items: center; /* Center content horizontally */
 }
 
 .custom-title {
@@ -458,15 +472,34 @@ tbody tr:hover {
   font-size: x-large;
 }
 
-.card.mb-3.text-center {
-  font-family: 'Pricedown Bl', sans-serif;
-  border: 1.5px inset black !important;
-  border-radius: 10px;
-  box-shadow: inset 2.5px 2.5px 17.75px 17.75px #252524;
-  outline: 1px solid black;
-  background-color: #252524 !important;
+.btn.btn-buy {
+  color: #1A773F !important;
 }
 
-.rank {
-  align-content: end;
+#buy-card, .column.justify-content-center.align-items-center.p-5  {
+  border: 1.5px inset black !important;
+  border-radius: 10px;
+  box-shadow: inset 2.5px 2.5px 17.75px 17.75px #252524 !important;
+  outline: 1px solid black !important;
+  background-color: #252524 !important;
+  color: antiquewhite;
+  max-width: 430px !important;
+  padding: auto;
+  font-family: 'Pricedown Bl', sans-serif;
+  font-size: xx-large;
+}
+
+
+.card.mb-3 {
+  margin: 0 auto; /* Centers horizontally on all screens */
+}
+
+@media (min-width: 992px) {  /* Target screens wider than 992px */
+  .card.mb-3.text-center {
+    /* Additional styles for larger screens, if needed */
+  }
+}
+
+.card-body {
+  font-size: x-large;
 }

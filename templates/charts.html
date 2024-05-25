@@ -3,47 +3,51 @@
 Crypto Charts
 {% endblock title %}
 
+<h2>Cryptocurrency Price Chart</h2>
 
-{% comment %} <head>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-</head>
+{% if error_message %}
+  <div class="alert alert-danger" role="alert">
+    {{ error_message }}
+  </div>
+{% endif %}
 
-    <div id='crypto-chart-container'>
-        <h1>Crypto Charts</h1>
+<form method="post">
+  {% csrf_token %}
+  <div class="form-group row">
+    <label for="cryptocurrency" class="col-sm-2 col-form-label">Cryptocurrency:</label>
+    <div class="col-sm-6">
+      <select name="cryptocurrency" id="cryptocurrency" class="form-control">
+        {% for code, name in crypto_choices %}
+          <option value="{{ code }}">{{ name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="start_date" class="col-sm-2 col-form-label">Start Date:</label>
+    <div class="col-sm-6">
+      <input type="date" name="start_date" id="start_date" class="form-control" required>
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="end_date" class="col-sm-2 col-form-label">End Date:</label>
+    <div class="col-sm-6">
+      <input type="date" name="end_date" id="end_date" class="form-control" required>
+    </div>
+  </div>
+  <div class="form-group row">
+    <div class="col-sm-10">
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+  </div>
+</form>
+
+<br>
+
+{% if plot_div %}
+  <div id='crypto-chart-container'>
     {{ plot_div|safe }}
-</div>  {% endcomment %}
-
-
-
+  </div>
+{% endif %}
 
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-<div id='crypto-chart-container'></div>
-<script>
-var data = {{ data|safe }};
-var trace = {
-  x: data.map(row => row.timestamp),
-  close: data.map(row => row.close),
-  high: data.map(row => row.high),
-  low: data.map(row => row.low),
-  open: data.map(row => row.open),
-
-  increasing: {line: {color: 'blue'}},
-  decreasing: {line: {color: 'grey'}},
-
-  type: 'candlestick',
-  xaxis: 'x',
-  yaxis: 'y'
-};
-
-var layout = {
-  dragmode: 'zoom',
-  showlegend: false,
-  xaxis: {
-    rangeslider: {
-       visible: false
-    }
-  }
-};
-
-Plotly.newPlot('crypto-chart-container', [trace], layout);
-</script>
