@@ -94,24 +94,70 @@ Cartera
                   <i class="fa fa-arrow-down red-arrow"></i>
                 {% endif %} 
               </td>
-              <td><a href="{% url 'delete_from_portfolio' crypto.id %}"><i class="fa fa-trash red-arrow"></i></a></td>
+              <td><a href="{% url 'sell' crypto.id %}"><i class="fa fa-dollar-sign green-arrow"></i></a></td>
             </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
-      <div class="alert alert-info py-3 mb-3 fancy-color">
-        <div><h4 class="mb-0 text-light">Total Portfolio Value</h4></div>
-        <div><p class="display-4 text-light"> ${{ new_portfolio_value|floatformat:2 }}</p></div>
+  {% endif %}
+
+    <div class="alert alert-info py-3 mb-3 fancy-color">
+      <div><h4 class="mb-0 text-light">Total Portfolio Value</h4></div>
+      <div><p class="display-4 text-light mb-0"> ${{ total_value|floatformat:2 }}</p></div>
+      <div>
+        <h4 class="cash-amount">Cash Balance: ${{ portfolio.cash_balance }}</h4>
+        <h4 class="crypto-balance">Crypto Holdings: ${{ portfolio.crypto_value }}</h4>
       </div>
+    </div>
+
+      
+    {% if user_cryptocurrencies %}
+      <div id="portfolio-chart"></div>
+    
+      <script>
+        var ctx = document.getElementById('portfolio-chart').getContext('2d');
+        var chart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: [ {% for crypto in user_cryptocurrencies %}{{ crypto.name }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+            datasets: [{
+              label: 'Cryptocurrency Quantity',
+              data: [ {% for crypto in user_cryptocurrencies %}{{ crypto.quantity }}{% if not forloop.last %}, {% endif %}{% endfor %} ],
+              backgroundColor: [ 'rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)', 'rgba(75, 192, 192, 0.2)', 'rgba(153, 102, 255, 0.2)' ]
+            }]
+          },
+          options: {
+            legend: {
+              display: false
+            },
+            scales: {
+              xAxes: [{
+                stacked: true
+              }],
+              yAxes: [{
+                stacked: true
+              }]
+            }
+          }
+        });
+      </script>
+  
     
     
   {% else %}
   <div class="alert alert-danger my-3 p-3 rounded text-center text-light">
     You have not added any cryptocurrencies to your portfolio yet.
   </div>
-  <p><a class="btn btn-outline-light" href="{% url 'home' %}">Add Cryptocurrencies</a></p>
   {% endif %}
+
+  <div>
+    <p><a class="btn btn-get-crypto" href="{% url 'home' %}">Add Cryptocurrencies</a></p>
+    <a class="btn btn-reset-portfolio" href="{% url 'reset_portfolio' %}">Reset Portfolio</a>
+    <a class="btn btn-delete-account" href="{% url 'delete_account' %}">Delete my account</a>
+  </div>
+
+  
 
   <br><br><br><br>
   <script>

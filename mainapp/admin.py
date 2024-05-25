@@ -15,4 +15,4 @@ class CryptocurrencyAdmin(admin.ModelAdmin):
 
 @admin.register(Portfolio)
 class PortfolioAdmin(admin.ModelAdmin):
-    list_display = ('user', 'total_value')
+    list_display = ('user', 'cash_balance', 'crypto_value', 'total_value')

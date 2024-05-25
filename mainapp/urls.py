@@ -4,7 +4,7 @@ from django.urls import path, reverse_lazy
 from django.views.generic import RedirectView
 
 from . import views
-from .views import crypto_chart
+from .views import *
 
 
 urlpatterns = [
@@ -27,7 +27,8 @@ urlpatterns = [
     path('charts/', crypto_chart, name='charts'),
     
     # CRUD operations on cryptos
-    path("search/", views.search_view, name="search"),
+    path("buy/", views.buy_view, name="buy"),
+    path('sell/<int:pk>/', views.sell_view, name='sell'),
     path("add_to_portfolio/", views.add_to_portfolio_view, name="add_to_portfolio"),
     path('delete_from_portfolio/<int:pk>/', views.delete_from_portfolio_view, name='delete_from_portfolio'),
     
@@ -41,4 +42,10 @@ urlpatterns = [
 
     path('password_reset_complete/', auth_views.PasswordResetCompleteView.as_view(
     template_name='reset/password_reset_complete.html'), name='password_reset_complete'),
+
+    #Reset portfolio
+    path('reset_portfolio/', views.reset_portfolio_view, name='reset_portfolio'),
+
+    #User delete
+    path('delete_account/', delete_account_view, name='delete_account'),
 ]

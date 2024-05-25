@@ -361,7 +361,6 @@ td {
   padding: 0.75rem;
   vertical-align: middle;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  bord
 }
 
 th {
@@ -476,6 +475,31 @@ tbody tr:hover {
   color: #1A773F !important;
 }
 
+.btn.btn-reset-portfolio {
+  background-color: #FEAA63;
+  color: #1A773F !important;
+}
+
+.btn.btn-reset-portfolio:hover {
+  color: #FEAA63 !important;
+  background-color: #1A773F !important;
+}
+
+.btn.btn-delete-account {
+  color: #520008;
+  background-color: #FEAA63;
+}
+.btn.btn-delete-account:hover {
+  background-color: #520008;
+  color: #FEAA63;
+}
+
+.btn.btn-get-crypto {
+  background-color: #1A773F;
+  color: #FEAA63;
+}
+
+
 #buy-card, .column.justify-content-center.align-items-center.p-5  {
   border: 1.5px inset black !important;
   border-radius: 10px;
@@ -502,4 +526,10 @@ tbody tr:hover {
 
 .card-body {
   font-size: x-large;
+}
+
+.cash-amount {
+  font-size: x-large !important;
+  color: #1A773F;
+
 }

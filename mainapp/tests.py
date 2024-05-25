@@ -207,25 +207,25 @@ class UrlTest(TestCase):
         
     """    
     ----------------
-    SEARCH PAGE TESTS
+    BUY PAGE TESTS
     -----------------
     """
          
     def testSearchPageNoLogin(self):
-        response = self.client.get('/search/')
+        response = self.client.get('/buy/')
         self.assertEqual(response.status_code, 302)
     
     def testSearchPageUrl(self):
-        url = reverse('search')
+        url = reverse('buy')
         self.assertEqual(resolve(url).func, search_view)
     
     # check if search page can only be accessed by POST request
     def testSearchPagePostOnly(self):
         self.client.login(username=self.user.username, password='12345')
-        response = self.client.get('/search/')
+        response = self.client.get('/buy/')
         self.assertEqual(response.status_code, 405)
         
-        response = self.client.post('/search/')
+        response = self.client.post('/buy/')
         self.assertEqual(response.status_code, 200)
         
     
@@ -486,12 +486,12 @@ class SearchViewTestCase(TestCase):
         self.client.login(username='testuser', password='testpassword')
         
     def test_valid_search(self):
-        response = self.client.post('/search/', {'search_query': 'bitcoin'})
+        response = self.client.post('/buy/', {'search_query': 'bitcoin'})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'BTC')
         
     def test_invalid_search(self):
-        response = self.client.post('/search/', {'search_query': 'invalid_crypto_currency'})
+        response = self.client.post('/buy/', {'search_query': 'invalid_crypto_currency'})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'No crypto currency found based on your search query.')
 

@@ -1,0 +1,27 @@
+{% extends 'base.html' %} {% block title %} Sell {% endblock title %} {% block content %} 
+
+<div class="text-white border-0 col-md-8 mx-auto mt-5">
+  <div class="card mb-3 text-center" id="sell-card">
+    <div class="column justify-content-center align-items-center p-5">
+      <div class="d-flex flex-column align-items-center">
+        <img src="{{ image }}" height="150" width="150" class="img-fluid" alt="{{ symbol }}">
+      </div>
+    
+      <div class="d-flex flex-column align-items-center">
+        <div class="card-body">
+          <h1 class="card-title text-uppercase mb-2"><b>{{ coin_id }}</b><p class="card-subtitle mb-2 text-muted"><b>[{{ symbol }}]</b></p></h1>
+          
+          <p class="card-text text-uppercase mb-2"><small><b>MARKET CAP:</b> {{ market_cap }}</small></p>
+          <form action="{% url 'sell' %}" method="post" class="d-inline-block"> 
+            {% csrf_token %} 
+            <input type="hidden" name="id" value="{{ coin_id }}">
+            <label class="text-uppercase" color="#FEAA63">Amount</label> 
+            <input type="number" name="sell-amount" min="1" max="500" value="1" width="20px" height="20px" class="form-control d-flex text-white fs-1"><br>
+            <button type="submit" class="btn btn-sell">Sell</button>
+          </form>
+      </div>        
+      </div>
+    </div>    
+  </div> 
+</div>   
+{% endblock content %} {% block scripts %}  {% endblock scripts %}

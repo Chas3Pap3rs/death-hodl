@@ -2,6 +2,7 @@ import json
 import requests
 import pandas as pd
 from requests import Request, Session
+from decimal import Decimal
 from django.contrib import auth, messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -63,6 +64,8 @@ def signup_view(request):
                 user.password = make_password(form.cleaned_data['password1'])
                 user.email = form.cleaned_data['email']
                 user.save()
+                # Create new portfolio for user with initial cash balance and portfolio value
+                Portfolio.objects.create(user=user, cash_balance=Decimal('100000.00'), crypto_value=Decimal('0.00'))
                 messages.success(request, 'You have successfully signed up!', extra_tags='success')
                 return redirect('login')
     else:
@@ -91,6 +94,8 @@ def signup_with_referrer_view(request, referral_code):
             user.password = make_password(form.cleaned_data['password1'])
             user.email = form.cleaned_data['email']
             user.save()
+            # Create new portfolio for user with initial cash balance and portfolio value
+            Portfolio.objects.create(user=user, cash_balance=Decimal('100000.00'), crypto_value=Decimal('0.00'))
             # create a referral instance
             referral = Referal.objects.create(user=user, referrer=referrer)
             referral.save()
@@ -128,36 +133,28 @@ def portfolio_view(request):
     user_cryptocurrencies = Cryptocurrency.objects.filter(user=current_user)
 
     if user_portfolio := Portfolio.objects.filter(user=current_user).first():
-        portfolio = Portfolio.objects.get(user=current_user)
+      portfolio = Portfolio.objects.get(user=current_user)
 
-        # get all the crypto currencies in the portfolio and recalculate the total value of the portfolio
-        new_portfolio_value = 0
+      context = {
+          'current_user': current_user,
+          'referral_code': referral_code,
+          'user_cryptocurrencies': user_cryptocurrencies,
+          'portfolio': portfolio,  # Changed 'user_portfolio' to 'portfolio'
+          'referrals': referrals, 
+          'total_bonus': total_bonus,
+          'total_value': portfolio.total_value,  # Changed 'new_portfolio_value' to 'total_value'
+      }
 
-        user_cryptocurrencies = Cryptocurrency.objects.filter(user=current_user)
-        for cryptocurrency in user_cryptocurrencies:
-            total_value = cryptocurrency.quantity * cryptocurrency.current_price
-            new_portfolio_value += total_value
-
-        portfolio.total_value = new_portfolio_value
-        portfolio.save()
-
-        context = {
-            'current_user': current_user,
-            'referral_code': referral_code,
-            'user_cryptocurrencies': user_cryptocurrencies,
-            'user_portfolio': user_portfolio,
-            'referrals': referrals, 
-            'total_bonus': total_bonus,
-            'new_portfolio_value': new_portfolio_value,
-        }
     else:
-        context = {
+    
+      context = {
             'current_user': current_user,
             'referral_code': referral_code,
             'user_cryptocurrencies': user_cryptocurrencies,
             'user_portfolio': user_portfolio,
             'referrals': referrals, 
             'total_bonus': total_bonus,
+
         }
     return render(request, 'portfolio.html', context)
 
@@ -205,7 +202,7 @@ def home_view(request):
 
 
 @login_required(login_url="login")
-def search_view(request):
+def buy_view(request):
     if request.method == 'POST':
         pass
     elif request.method == 'GET':  # Correct indentation (one level less)
@@ -245,94 +242,276 @@ def search_view(request):
             'market_cap': market_cap,
             'is_already_in_portfolio': is_already_in_portfolio,
         }
-        return render(request, 'search.html', context)
+        return render(request, 'buy.html', context)
 
     else:
         return HttpResponseNotAllowed(['GET', 'POST'])  # Explicitly allow both methods
-
     
 @login_required(login_url="login")
-def add_to_portfolio_view(request):
+def sell_view(request, pk):
     if request.method != 'POST':
-        return HttpResponse('Need a crypto currency to add to your portfolio. Go back to the home page and search for a crypto currency.')
-    
-    # get values from the form
-    coin_id = request.POST.get('id')
-    quantity = request.POST.get('quantity')
-    print(coin_id)
-    
-    # get the crypto currency data from the coingecko api based on the coin id
-    api_url = f'https://api.coingecko.com/api/v3/coins/{coin_id}'
-    response = requests.get(api_url)
-    data = response.json()
-    print(data)
-    # store the name, symbol, current price, and market cap rank of the crypto currency
-    user = request.user
-    name = data['name']
-    id_from_api = data['id']
-    symbol = data['symbol']
-    current_price = data['market_data']['current_price']['usd']
+        return HttpResponse('Need a crypto currency to sell. Go back to the portfolio page and enter a sell amount.')
 
-    try:
-        # save the crypto currency to the database
-        crypto_currency = Cryptocurrency.objects.create(
-            user = user,
-            name= name,
-            id_from_api= id_from_api,
-            symbol= symbol,
-            quantity= quantity,
-            current_price=current_price,
-        )
-    except IntegrityError:
-        crypto_currency = Cryptocurrency.objects.get(user=user, name=name)
-        crypto_currency.quantity += int(quantity)
+    sell_amount_str = request.POST.get('sell_amount')
+    if sell_amount_str is None:
+        sell_amount = 0.0
+    else:
+        sell_amount = float(sell_amount_str)
 
+    crypto_currency = Cryptocurrency.objects.get(pk=pk)
+    if crypto_currency.quantity < sell_amount:
+        messages.error(request, f"Insufficient quantity of {crypto_currency.name}. You only have {crypto_currency.quantity}.")
+        return redirect('portfolio')
 
+    total_earned = sell_amount * crypto_currency.current_price
+    crypto_currency.quantity -= sell_amount
     crypto_currency.save()
 
-    # calculate the total value of the crypto currency
-    total_value = int(quantity) * int(current_price)
-
-    # save the total value of the crypto currency to the database in the portfolio model
-    # check if the user already has a portfolio
-    if Portfolio.objects.filter(user=user).exists():
-        portfolio = Portfolio.objects.get(user=user)
-        portfolio.total_value += total_value
-    else: 
-        portfolio = Portfolio(user=user, total_value=total_value)     
-
+    portfolio = Portfolio.objects.get(user=request.user)
+    portfolio.cash_balance += total_earned
+    portfolio.crypto_value -= total_earned
+    portfolio.total_value = portfolio.cash_balance + portfolio.crypto_value
     portfolio.save()
-    messages.success(request, f'{name} has been added to your portfolio.')
 
-    # if all the above steps are successful, redirect the user to the portfolio page
-    return redirect('portfolio') 
-  
-@login_required(login_url="login")      
-def delete_from_portfolio_view(request, pk):
-    # get the current logged in user
-    user = request.user
-    
-    # get the crypto currency object from the database
-    crypto_currency = Cryptocurrency.objects.get(pk=pk)
-    
-    # delete the crypto currency from the database
-    crypto_currency.delete()
-    
-    # update the total value of the portfolio
-    portfolio = Portfolio.objects.get(user=user)
-    
-    # get all the crypto currencies in the portfolio and recalculate the total value of the portfolio
-    user_cryptocurrencies = Cryptocurrency.objects.filter(user=user)
-    for cryptocurrency in user_cryptocurrencies:
-        total_value = cryptocurrency.quantity * cryptocurrency.current_price
-        portfolio.total_value += total_value
-    
-    portfolio.save()    
-
-    # send an alert to the user that the crypto currency has been deleted from the portfolio
-    messages.warning(request, f'{crypto_currency.name} has been deleted from your portfolio.')
-    
+    messages.success(request, f"{sell_amount} {crypto_currency.symbol} has been sold for ${total_earned:.2f}.")
     return redirect('portfolio')
+
+    
+# @login_required(login_url="login")
+# def add_to_portfolio_view(request):
+#     if request.method != 'POST':
+#         return HttpResponse('Need a crypto currency to add to your portfolio. Go back to the home page and search for a crypto currency.')
+    
+#     # get values from the form
+#     coin_id = request.POST.get('id')
+#     quantity = request.POST.get('quantity')
+#     print(coin_id)
+    
+#     # get the crypto currency data from the coingecko api based on the coin id
+#     api_url = f'https://api.coingecko.com/api/v3/coins/{coin_id}'
+#     response = requests.get(api_url)
+#     data = response.json()
+#     print(data)
+#     # store the name, symbol, current price, and market cap rank of the crypto currency
+#     user = request.user
+#     name = data['name']
+#     id_from_api = data['id']
+#     symbol = data['symbol']
+#     current_price = data['market_data']['current_price']['usd']
+
+#     try:
+#         # save the crypto currency to the database
+#         crypto_currency = Cryptocurrency.objects.create(
+#             user = user,
+#             name= name,
+#             id_from_api= id_from_api,
+#             symbol= symbol,
+#             quantity= quantity,
+#             current_price=current_price,
+#         )
+#     except IntegrityError:
+#         crypto_currency = Cryptocurrency.objects.get(user=user, name=name)
+#         crypto_currency.quantity += int(quantity)
+
+
+#     crypto_currency.save()
+
+#     # calculate the total value of the crypto currency
+#     total_value = int(quantity) * int(current_price)
+
+#     # save the total value of the crypto currency to the database in the portfolio model
+#     # check if the user already has a portfolio
+#     if Portfolio.objects.filter(user=user).exists():
+#         portfolio = Portfolio.objects.get(user=user)
+#         portfolio.total_value += total_value
+#     else: 
+#         portfolio = Portfolio(user=user, total_value=total_value)     
+
+#     portfolio.save()
+#     messages.success(request, f'{name} has been added to your portfolio.')
+
+#     # if all the above steps are successful, redirect the user to the portfolio page
+#     return redirect('portfolio') 
+  
+@login_required(login_url="login")
+def add_to_portfolio_view(request):
+  if request.method != 'POST':
+    return HttpResponse('Need a crypto currency to add to your portfolio. Go back to the home page and search for a crypto currency.')
+
+  # Get values from the form (changed to buy amount)
+  coin_id = request.POST.get('id')
+  buy_amount_str = request.POST.get('buy_amount')
+
+  # Check if buy_amount is provided, if not set it to 0
+  if buy_amount_str is None:
+      buy_amount = 0.0  # Or set a default value as needed
+  else:
+      buy_amount = float(buy_amount_str)
+
+  # Get crypto data from API
+  api_url = f'https://api.coingecko.com/api/v3/coins/{coin_id}'
+  response = requests.get(api_url)
+  data = response.json()
+  current_price = data['market_data']['current_price']['usd']
+
+  user = request.user
+  existing_cryptocurrency = Cryptocurrency.objects.filter(user=user, name=data['name']).first()
+
+    # Check for existing cryptocurrency and update quantity if found
+  if existing_cryptocurrency:
+      quantity = buy_amount / float(current_price)
+      # existing_cryptocurrency.quantity += quantity
+      existing_cryptocurrency.quantity += Decimal(str(quantity))
+      existing_cryptocurrency.save()
+      messages.success(request, f'{existing_cryptocurrency.name} quantity has been updated in your portfolio.')
+      return redirect('portfolio')
+
+  # Calculate quantity based on buy amount and price (only if new)
+  quantity = buy_amount / float(current_price)
+
+   # Get user's portfolio
+  portfolio, _ = Portfolio.objects.get_or_create(user=user)
+
+  # Check if user has enough cash balance
+  if portfolio.cash_balance < buy_amount:
+    messages.error(request, "Insufficient funds. Please enter a lower amount.")
+    return redirect('buy')
+
+  # Save cryptocurrency to database
+  crypto_currency, created = Cryptocurrency.objects.get_or_create(
+      user=user,
+      name=data['name'],
+      id_from_api=data['id'],
+      symbol=data['symbol'],
+      current_price=current_price,
+  )
+  if created:
+    crypto_currency.quantity = quantity
+  else:
+    crypto_currency.quantity += quantity
+  crypto_currency.save()
+
+  # Update user cash balance and portfolio value
+  portfolio.cash_balance -= buy_amount
+  portfolio.crypto_value += crypto_value
+  portfolio.total_value = portfolio.cash_balance + portfolio.crypto_value
+  portfolio.save()
+
+  messages.success(request, f'{crypto_currency.name} has been added to your portfolio.')
+  return redirect('portfolio')
+
+
+
+@login_required(login_url="login")
+def delete_from_portfolio_view(request, pk):
+  # Get the current logged in user
+  user = request.user
+
+  # Get the sell quantity from the form
+  sell_quantity = float(request.POST.get('sell_quantity'))
+
+  # Get the cryptocurrency object from the database
+  crypto_currency = Cryptocurrency.objects.get(pk=pk)
+
+  # Check if user has sufficient quantity to sell
+  if crypto_currency.quantity < sell_quantity:
+      messages.error(request, f"Insufficient quantity of {crypto_currency.name}. You only have {crypto_currency.quantity}.")
+      return redirect('portfolio')
+
+  # Get current price from existing logic (assuming it's retrieved before)
+  current_price = crypto_currency.current_price
+
+  # Calculate total earned amount from selling
+  total_earned = sell_quantity * current_price
+
+  # Update cryptocurrency quantity
+  crypto_currency.quantity -= sell_quantity
+  crypto_currency.save()
+
+  # Get user's portfolio
+  portfolio = Portfolio.objects.get(user=user)
+
+ # Update user cash balance
+  portfolio.cash_balance += total_earned
+  portfolio.crypto_value -= (crypto_currency.quantity + sell_quantity) * current_price + remaining_value
+  portfolio.total_value = portfolio.cash_balance + portfolio.crypto_value
+  portfolio.save()
+
+  # Update portfolio total value (considering remaining quantity)
+  remaining_value = crypto_currency.quantity * current_price
+  portfolio.crypto_value -= (crypto_currency.quantity + sell_quantity) * current_price + remaining_value
+  portfolio.save()
+
+  messages.success(request, f"{sell_quantity} {crypto_currency.symbol} has been sold for ${total_earned:.2f}.")
+  return redirect('portfolio')
+
+
+# @login_required(login_url="login")      
+# def delete_from_portfolio_view(request, pk):
+#     # get the current logged in user
+#     user = request.user
+    
+#     # get the crypto currency object from the database
+#     crypto_currency = Cryptocurrency.objects.get(pk=pk)
+    
+#     # delete the crypto currency from the database
+#     crypto_currency.delete()
+    
+#     # update the total value of the portfolio
+#     portfolio = Portfolio.objects.get(user=user)
+    
+#     # get all the crypto currencies in the portfolio and recalculate the total value of the portfolio
+#     user_cryptocurrencies = Cryptocurrency.objects.filter(user=user)
+#     for cryptocurrency in user_cryptocurrencies:
+#         total_value = cryptocurrency.quantity * cryptocurrency.current_price
+#         portfolio.total_value += total_value
+    
+#     portfolio.save()    
+
+#     # send an alert to the user that the crypto currency has been deleted from the portfolio
+#     messages.warning(request, f'{crypto_currency.name} has been deleted from your portfolio.')
+    
+#     return redirect('portfolio')
+
+
+def reset_portfolio_view(request):
+    # Delete all of the user's crypto holdings
+    Cryptocurrency.objects.filter(user=request.user).delete()
+
+    # Get the user's portfolio
+    portfolio = Portfolio.objects.get(user=request.user)
+
+    # Reset the user's cash balance and crypto value to their initial values
+    portfolio.cash_balance = Decimal('100000.00')
+    portfolio.crypto_value = Decimal('0.00')
+    portfolio.save()
+
+    messages.success(request, 'Your portfolio has been reset.')
+    return redirect('portfolio')
+
+
+@login_required(login_url="login")
+def delete_account_view(request):
+    user = request.user
+
+    # Delete user's related objects
+    Portfolio.objects.filter(user=user).delete()
+    Cryptocurrency.objects.filter(user=user).delete()
+    Referal.objects.filter(user=user).delete()
+    Profile.objects.filter(user=user).delete()
+
+    # Delete user
+    user.delete()
+
+    messages.success(request, 'Your account has been deleted.')
+    return redirect('home')
+
+
+
+
+
+
+
 
 def crypto_chart(request):
   # Available cryptocurrencies (replace with your actual choices)

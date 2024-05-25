@@ -32,7 +32,7 @@ Casa de la Muerte
     </div>
     <div class="row mt-3 justify-content-center">
       <div class="col-md-6 col-lg-4">
-        <form action="{% url 'search' %}" method="post">
+        <form action="{% url 'buy' %}" method="post">
           {% csrf_token %}
           <div class="input-group">
             <input class="form-control" type="text" placeholder="Search cryptocurrencies..." name="search_query" required>
@@ -54,7 +54,7 @@ Casa de la Muerte
     {% if top_crypto_data_global %}
       {% for obj in top_crypto_data_global %}
         <div class="crypto-item">
-          <a href="{% url 'search' %}?search_query={{ obj.name }}"> 
+          <a href="{% url 'buy' %}?search_query={{ obj.name }}"> 
             <div class="crypto-item-header">
               <img class="crypto-image" src={{ obj.image }}>&nbsp;&nbsp;<h3>{{ obj.name }}</h3>
               &nbsp;&nbsp;&nbsp;&nbsp; <b class="rank" >Rank</b>: {{obj.market_cap_rank}}

@@ -13,6 +13,7 @@ class Profile(models.Model):
     def __str__(self):
         return f'{self.user.username} profile'
 
+
 # Create the referal model
 class Referal(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -40,10 +41,14 @@ class Cryptocurrency(models.Model):
 # Create the portfolio linked to a user and store the total value of the portfolio
 class Portfolio(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='portfolios')
-    total_value = models.DecimalField(max_digits=15, decimal_places=2)
+    cash_balance = models.DecimalField(max_digits=15, decimal_places=2, default=100000.00)  # Set an initial cash balance
+    crypto_value = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)  # Set an initial crypto value
+
+    def total_value(self):
+        return self.cash_balance + self.crypto_value
 
     def __str__(self):
-        return f'{self.user.username} - Portfolio: {self.total_value}'
+        return f'{self.user.username} - Portfolio: {self.total_value()}'
     
 
 
