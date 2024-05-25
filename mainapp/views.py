@@ -206,43 +206,50 @@ def home_view(request):
 
 @login_required(login_url="login")
 def search_view(request):
-    if request.method != 'POST':
-        # return HTTP status code 405 if the request method is not POST along with a message
-        return HttpResponseNotAllowed(['POST'], 'Only POST requests are allowed for this view. Go back and search a cryptocurrency.')
-    
-    if not (search_query := request.POST.get('search_query')):
-        return HttpResponse('No crypto currency found based on your search query.')
-    
-    api_url = f'https://api.coingecko.com/api/v3/search?query={search_query}'
-    response = requests.get(api_url)
-    search_results = response.json()
-    try:
-        data = search_results['coins'][0]
-    except IndexError:
-        return HttpResponse('No crypto currency found based on your search query.')
-    coin_id = data['id']
-    image = data['large']
-    symbol = data['symbol']
-    market_cap = data['market_cap_rank']
+    if request.method == 'POST':
+        pass
+    elif request.method == 'GET':  # Correct indentation (one level less)
+        # Handle GET requests for displaying search results
+        search_query = request.GET.get('search_query')  # Access query string parameter
+        if not search_query:
+            return HttpResponse('No crypto currency found based on your search query.')
 
-    # check if the crypto currency is already in the users portfolio and pass that information to the template
-    current_user = request.user
-    is_already_in_portfolio = False
+        api_url = f'https://api.coingecko.com/api/v3/search?query={search_query}'
+        response = requests.get(api_url)
+        search_results = response.json()
+        try:
+            data = search_results['coins'][0]
+        except IndexError:
+            return HttpResponse('No crypto currency found based on your search query.')
 
-    user_cryptocurrencies = Cryptocurrency.objects.filter(user=current_user)
-    for cryptocurrency in user_cryptocurrencies:
-        if cryptocurrency.name.lower() == coin_id.lower():
-            is_already_in_portfolio = True    
+        coin_id = data['id']
+        image = data['large']
+        symbol = data['symbol']
+        market_cap = data['market_cap_rank']
 
-    context = {
-        'data': data,
-        'coin_id': coin_id,
-        'image': image,
-        'symbol': symbol,
-        'market_cap': market_cap,
-        'is_already_in_portfolio': is_already_in_portfolio,
-    }
-    return render(request, 'search.html', context)
+        # check if the crypto currency is already in the users portfolio and pass that information to the template
+        current_user = request.user
+        is_already_in_portfolio = False
+        if current_user.is_authenticated:
+            user_cryptocurrencies = Cryptocurrency.objects.filter(user=current_user)
+            for cryptocurrency in user_cryptocurrencies:
+                if cryptocurrency.name.lower() == coin_id.lower():
+                    is_already_in_portfolio = True
+                    break  # Exit the loop after finding a match
+
+        context = {
+            'data': data,
+            'coin_id': coin_id,
+            'image': image,
+            'symbol': symbol,
+            'market_cap': market_cap,
+            'is_already_in_portfolio': is_already_in_portfolio,
+        }
+        return render(request, 'search.html', context)
+
+    else:
+        return HttpResponseNotAllowed(['GET', 'POST'])  # Explicitly allow both methods
+
     
 @login_required(login_url="login")
 def add_to_portfolio_view(request):

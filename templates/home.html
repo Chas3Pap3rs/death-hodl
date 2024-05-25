@@ -54,32 +54,35 @@ Casa de la Muerte
     {% if top_crypto_data_global %}
       {% for obj in top_crypto_data_global %}
         <div class="crypto-item">
-          <div class="crypto-item-header">
-            <img class="crypto-image" src={{obj.image}}>&nbsp;&nbsp;<h3>{{obj.name}}</h3>
-          </div>
+          <a href="{% url 'search' %}?search_query={{ obj.name }}"> 
+            <div class="crypto-item-header">
+              <img class="crypto-image" src={{ obj.image }}>&nbsp;&nbsp;<h3>{{ obj.name }}</h3>
+              &nbsp;&nbsp;&nbsp;&nbsp; <b class="rank" >Rank</b>: {{obj.market_cap_rank}}
+            </div>
 
-          <div class="crypto-info">
-            <p>
-              {% comment %} <b>Rank</b>: {{obj.market_cap_rank}} &nbsp;&nbsp; {% endcomment %}
-              <b>Price</b>: {{obj.current_price}}
-            </p>
+            <div class="crypto-info">
+              <p>
+                <b>Rank</b>: {{obj.market_cap_rank}} &nbsp;&nbsp;
+                <b>Price</b>: {{obj.current_price}}
+              </p>
 
-            <p><b>Market</b> Cap: {{obj.market_cap}}</p>
-            <p><b>Price Change 24H</b>: {{obj.price_change_24h|floatformat:5 }}
-              {% if obj.price_change_percentage_24h > 0 %}
-                <i class="fa fa-arrow-up green-arrow"></i>
-              {% else %}
-              <i class="fa fa-arrow-down red-arrow"></i>
-              {% endif %} 
-            </p>
-            <p><b>Price Change 24H (%)</b>: {{obj.price_change_percentage_24h|floatformat:3 }}
-              {% if obj.price_change_percentage_24h > 0 %}
-                <i class="fa fa-arrow-up green-arrow"></i>
-              {% else %}
+              <p><b>Market</b> Cap: {{obj.market_cap}}</p>
+              <p><b>Price Change 24H</b>: {{obj.price_change_24h|floatformat:5 }}
+                {% if obj.price_change_percentage_24h > 0 %}
+                  <i class="fa fa-arrow-up green-arrow"></i>
+                {% else %}
                 <i class="fa fa-arrow-down red-arrow"></i>
-              {% endif %} 
-            </p>
-          </div>
+                {% endif %} 
+              </p>
+              <p><b>Price Change 24H (%)</b>: {{obj.price_change_percentage_24h|floatformat:3 }}
+                {% if obj.price_change_percentage_24h > 0 %}
+                  <i class="fa fa-arrow-up green-arrow"></i>
+                {% else %}
+                  <i class="fa fa-arrow-down red-arrow"></i>
+                {% endif %} 
+              </p>
+            </div>
+          </a>
         </div>
       {% endfor %}
     {% else %}

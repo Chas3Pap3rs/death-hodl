@@ -8,9 +8,10 @@ from .views import crypto_chart
 
 
 urlpatterns = [
+    # home/main page
     path("", views.home_view, name="home"),
     
-    # user authentication
+    # user authentication - sign up and login
     path("login/", views.login_view, name="login"),
     path("logout/", views.logout_view, name="logout"),
     
@@ -20,11 +21,6 @@ urlpatterns = [
     # wallet page
     path("portfolio/", views.portfolio_view, name="portfolio"),
 
-    #charts page
-    # path('charts/', views.charts, name='charts'),
-    #django_plotly_dash
-    # path('django_plotly_dash/', include('django_plotly_dash.urls')),
-    path('charts/', crypto_chart, name='charts'),
     
     # CRUD operations on cryptos
     path("search/", views.search_view, name="search"),
