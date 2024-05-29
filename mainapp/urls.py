@@ -20,32 +20,28 @@ urlpatterns = [
     # wallet page
     path("portfolio/", views.portfolio_view, name="portfolio"),
 
-    #charts page
-    # path('charts/', views.charts, name='charts'),
-    #django_plotly_dash
-    # path('django_plotly_dash/', include('django_plotly_dash.urls')),
+    path('trade_in_points/', views.trade_in_points, name='trade_in_points'),
+
+    # charts page
     path('charts/', crypto_chart, name='charts'),
     
     # CRUD operations on cryptos
     path("buy/", views.buy_view, name="buy"),
     path('sell/<int:pk>/', views.sell_view, name='sell'),
     path("add_to_portfolio/", views.add_to_portfolio_view, name="add_to_portfolio"),
-    path('delete_from_portfolio/<int:pk>/', views.delete_from_portfolio_view, name='delete_from_portfolio'),
+    path('subtract_from_portfolio/<int:pk>/', views.subtract_from_portfolio_view, name='subtract_from_portfolio'),
     
     # password reset stuff
     path('password_reset/', auth_views.PasswordResetView.as_view(template_name="reset/password_reset.html"), name='password_reset'),
-    
     path('password_reset_done/', auth_views.PasswordResetDoneView.as_view(template_name="reset/password_reset_done.html"), name='password_reset_done'),
-    
     path('password_reset_confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(
     template_name='reset/password_reset_confirm.html'), name='password_reset_confirm'),
-
     path('password_reset_complete/', auth_views.PasswordResetCompleteView.as_view(
     template_name='reset/password_reset_complete.html'), name='password_reset_complete'),
 
-    #Reset portfolio
+    # Reset portfolio
     path('reset_portfolio/', views.reset_portfolio_view, name='reset_portfolio'),
 
-    #User delete
+    # User delete
     path('delete_account/', delete_account_view, name='delete_account'),
 ]

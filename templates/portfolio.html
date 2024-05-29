@@ -26,7 +26,7 @@ Cartera
 
   {% if referrals %}
   <div class="mb-5">
-  <table class="table table-striped table-hover custom-table mt-5">
+    <table class="table table-striped table-hover custom-table mt-5">
       <thead>
         <tr>
           <th scope="col">#</th>
@@ -45,20 +45,27 @@ Cartera
       </tbody>
     </table>
 
+    {% if total_bonus >= 0 %}
     <div class="row mt-5">
       <div class="col-md-6">
         <div class="alert alert-success py-3 mb-3">
-          <h4 class="mb-0">Total Referrals</h4>
-          <p class="mb-0 display-4">{{ referrals|length }}</p>
+          <h4 class="mb-0 text-dark">Total Referrals</h4>
+          <p class=" ml-3 mb-0 display-4">{{ referrals|length }}</p>
         </div>
       </div>
       <div class="col-md-6">
         <div class="alert alert-info py-3 mb-3">
-          <h4 class="mb-0 text-dark">Total Points Earned</h4>
-          <p class="mb-0 display-4 text-dark">{{ total_bonus }}</p>
+          <h4 class="mb-0">Total Points Earned</h4> 
+          <p class=" ml-3 mb-0 display-4">{{ total_bonus }}</p>
         </div>
       </div>
     </div>
+    {% endif %}
+
+    <form method="POST" action="{% url 'trade_in_points' %}">
+      {% csrf_token %}
+      <input type="submit" value="Trade in Points">
+    </form>
   </div>
   {% else %}
   <div class="alert alert-danger my-4 p-3 rounded text-center text-light">
@@ -94,7 +101,12 @@ Cartera
                   <i class="fa fa-arrow-down red-arrow"></i>
                 {% endif %} 
               </td>
-              <td><a href="{% url 'sell' crypto.id %}"><i class="fa fa-dollar-sign green-arrow"></i></a></td>
+              <td>
+                <a href="{% url 'sell' crypto.id %}"><i class="fa fa-dollar-sign green-arrow"></i></a>
+                {% comment %} <button type="btn btn-sell" class="sell-button" data-crypto-id="{{ crypto.id }}">
+                  <i class="fa fa-dollar-sign green-arrow"></i>
+                </button> {% endcomment %}
+              </td>
             </tr>
           {% endfor %}
         </tbody>
@@ -107,7 +119,7 @@ Cartera
       <div><p class="display-4 text-light mb-0"> ${{ total_value|floatformat:2 }}</p></div>
       <div>
         <h4 class="cash-amount">Cash Balance: ${{ portfolio.cash_balance }}</h4>
-        <h4 class="crypto-balance">Crypto Holdings: ${{ portfolio.crypto_value }}</h4>
+        <h4 class="crypto-balance">Crypto Holdings: ${{ portfolio.crypto_value|floatformat:2 }}</h4>
       </div>
     </div>
 
@@ -142,12 +154,10 @@ Cartera
           }
         });
       </script>
-  
-    
     
   {% else %}
   <div class="alert alert-danger my-3 p-3 rounded text-center text-light">
-    You have not added any cryptocurrencies to your portfolio yet.
+    You don't have any cryptocurrencies in your portfolio.
   </div>
   {% endif %}
 

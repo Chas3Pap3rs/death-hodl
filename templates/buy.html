@@ -23,11 +23,14 @@
           <h1 class="card-title text-uppercase mb-2"><b>{{ coin_id }}</b><p class="card-subtitle mb-2 text-muted"><b>[{{ symbol }}]</b></p></h1>
           
           <p class="card-text text-uppercase mb-2"><small><b>MARKET CAP:</b> {{ market_cap }}</small></p>
+          <p class="card-text text-uppercase mb-2"><small><b>Current Price:</b> <span id="current_price">{{ current_price }}</span></small></p>
           <form action="{% url 'add_to_portfolio' %}" method="post" class="d-inline-block"> 
             {% csrf_token %} 
             <input type="hidden" name="id" value="{{ coin_id }}">
-            <label class="text-uppercase" color="#FEAA63">Amount</label> 
-            <input type="number" name="buy-amount" min="1" max="500" value="1" width="20px" height="20px" class="form-control d-flex text-white fs-1"><br>
+            <label class="text-uppercase" color="#FEAA63">Amount:</label> 
+            <input type="number" id="buy_amount" name="buy_amount" min="1" max="500" value="1" width="20px" height="20px" class="form-control d-flex text-white fs-1"><br>
+            <p class="card-text mb-2"><small><b>Total Price:</b> $<span id="total_price">0</span></small></p>
+            <p class="card-text text-uppercase mb-2"><small><b>Available funds:</b> ${{ portfolio.cash_balance }}</small></p>
             <button type="submit" class="btn btn-buy">Buy</button>
           </form>
       </div>        
@@ -36,4 +39,22 @@
     
   </div> 
 </div>   
-{% endblock content %} {% block scripts %}  {% endblock scripts %}
+{% endblock content %} {% block scripts %}  
+<script>
+  document.addEventListener('DOMContentLoaded', (event) => {
+    document.getElementById('buy_amount').addEventListener('input', function() {
+      var amount = parseFloat(this.value);
+      console.log('Amount:', amount);  // Debug line
+      var current_price = document.getElementById('current_price').innerText;
+      console.log('Current Price String:', current_price);  // Debug line
+      var price = parseFloat(current_price);
+      console.log('Price:', price);  // Debug line
+      var total = amount * price;
+      console.log('Total:', total);  // Debug line
+      if (!isNaN(total)) {
+        document.getElementById('total_price').innerText = total.toFixed(2);
+      }
+    });
+  });
+  </script>
+{% endblock scripts %}

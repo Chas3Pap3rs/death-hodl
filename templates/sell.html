@@ -12,13 +12,15 @@
           <h1 class="card-title text-uppercase mb-2"><b>{{ coin_id }}</b><p class="card-subtitle mb-2 text-muted"><b>[{{ symbol }}]</b></p></h1>
           
           <p class="card-text text-uppercase mb-2"><small><b>MARKET CAP:</b> {{ market_cap }}</small></p>
-          <form action="{% url 'sell' %}" method="post" class="d-inline-block"> 
+          <p class="card-text text-uppercase mb-2"><small><b>Price Per Unit:</b> {{ current_price }}</small></p>
+          <form action="{% url 'sell' pk=crypto_currency.id %}" method="post" class="d-inline-block"> 
             {% csrf_token %} 
-            <input type="hidden" name="id" value="{{ coin_id }}">
-            <label class="text-uppercase" color="#FEAA63">Amount</label> 
-            <input type="number" name="sell-amount" min="1" max="500" value="1" width="20px" height="20px" class="form-control d-flex text-white fs-1"><br>
+            <input type="hidden" name="id" value="{{ crypto_currency.id }}">
+            <p class="text-uppercase">Available quantity: {{ quantity }}</p>  <!-- Add this line -->
+            <label class="text-uppercase" color="#FEAA63">Amount to Sell:</label> 
+            <input type="number" name="sell_amount" min="1" max="{{ quantity }}" value="1" width="20px" height="20px" class="form-control d-flex text-white fs-1"><br>
             <button type="submit" class="btn btn-sell">Sell</button>
-          </form>
+        </form>
       </div>        
       </div>
     </div>    
