@@ -51,7 +51,3 @@ class Portfolio(models.Model):
         return f'{self.user.username} - Portfolio: {self.total_value()}'
     
 
-
-
-# Attempting to make charts and trading functionality
-

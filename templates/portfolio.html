@@ -84,7 +84,8 @@ Cartera
             <th class="table-header" scope="col">Cryptocurrency</th>
             <th class="table-header" scope="col">Current Price</th>
             <th class="table-header" scope="col">Amount Owned</th>
-            <th class="table-header" scope="col">Price Shift</th>
+            <th class="table-header" scope="col">Total Value</th>
+            <th class="table-header" scope="col">24h %</th>
             <th class="table-header" scope="col">Action</th>
           </tr>
         </thead>
@@ -92,8 +93,9 @@ Cartera
           {% for crypto in user_cryptocurrencies %}
             <tr>
               <td>{{ crypto.name }}</td>
-              <td>{{ crypto.current_price }}</td>
+              <td>{{ crypto.current_price|floatformat:2 }}</td>
               <td>{{ crypto.quantity }}</td>
+              <td>{{ crypto.total_value|floatformat:2 }}</td>
               <td>{{crypto.price_change_percentage_24h|floatformat:3 }}
                 {% if crypto.price_change_percentage_24h > 0 %}
                   <i class="fa fa-arrow-up green-arrow"></i>
@@ -103,9 +105,6 @@ Cartera
               </td>
               <td>
                 <a href="{% url 'sell' crypto.id %}"><i class="fa fa-dollar-sign green-arrow"></i></a>
-                {% comment %} <button type="btn btn-sell" class="sell-button" data-crypto-id="{{ crypto.id }}">
-                  <i class="fa fa-dollar-sign green-arrow"></i>
-                </button> {% endcomment %}
               </td>
             </tr>
           {% endfor %}

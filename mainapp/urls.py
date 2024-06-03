@@ -19,11 +19,10 @@ urlpatterns = [
 
     # wallet page
     path("portfolio/", views.portfolio_view, name="portfolio"),
-
     path('trade_in_points/', views.trade_in_points, name='trade_in_points'),
 
     # charts page
-    path('charts/', crypto_chart, name='charts'),
+    # path('charts/', crypto_chart, name='charts'),
     
     # CRUD operations on cryptos
     path("buy/", views.buy_view, name="buy"),

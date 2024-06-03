@@ -101,9 +101,6 @@ p {
 
 
 .flex-container {
-  /* z-index: 1; */
-
-    
     font-size: 18px; 
     padding-bottom: 10px;
     padding-right: 30px;
@@ -115,7 +112,6 @@ p {
     background-color: #252524;
     box-shadow: inset 0px 0px 10px 5px rgba(0,0,0,0.6);
 
-
     display: grid;
     grid-auto-rows: minmax(auto, 220px);
     column-gap: 1em;
@@ -124,10 +120,6 @@ p {
 
     max-height: 1000px !important;
     overflow-y: scroll !important;
-
-    /* &:empty:not(:is(:before, :after)) {
-        display: none;
-    } */
 }
 
 .crypto-item {
@@ -141,7 +133,6 @@ p {
     margin: 10px;
     background-color: #252524;
     flex-wrap: wrap;
-    /* z-index: -1; */
     user-select: none !important;
 }
 
@@ -224,7 +215,6 @@ p {
   padding: 10px;
   font-size: 16px;
   cursor: pointer;
-  /* background-color: #fff; */
 }
 
 .tt-suggestion:hover {
@@ -248,7 +238,6 @@ p {
 }
 
 nav {
-  /* box-shadow: -10px 8px 0px rgb(196 181 253); */
   background: #252524;
   color: antiquewhite;
   margin-bottom: 50px;
@@ -270,7 +259,6 @@ nav {
   background-color: #252524;
   border: 2.5px inset antiquewhite !important;
   border-radius: 20px !important;
-  /* box-shadow: inset 0px 0px 2.5px 1.25px rgba(0,0,0,0.6); */
   color: #FEAA63;
   font-family: 'Pricedown Bl', sans-serif;
   font-size: x-large;
@@ -279,18 +267,6 @@ nav {
   user-select: none;
   cursor: pointer;
 }
-
-
-
-/* .portfolio.btn.btn-outline-light.my-2.my-sm-0.mr-2 {
-  color: #FEAA63;
-}
-
-.logout.btn.btn-outline-light.my-2.my-sm-0.mr-2 {
-  color: #BB2525;
-} */
-
-
 
 /* Footer */
 footer {
@@ -315,8 +291,6 @@ footer {
 .copy-right.text-center {
   margin-top: 7.5px;
 }
-
-
 
 .name-text {
   color: #FEAA63;
@@ -353,7 +327,6 @@ footer {
   margin-bottom: 1rem;
   color: #fff;
   background-color: #252524;
-  /* box-shadow: 10px -8px 0px rgb(253 230 138); */
 }
 
 th,
@@ -375,44 +348,25 @@ tbody tr:hover {
 }
 
 .alert {
-  /* border-radius: 5px !important;
-  color: #fff !important;
-  font-weight: bold !important;
-  font-size: 1rem !important;
-  letter-spacing: 0.05em !important;
-  font-weight: 300 !important; */
   padding: 0.5rem 1rem !important;
 
   background-color: #252530 !important; /* Same background as modal content */
-  /* padding: 15px; Add some padding for content spacing */
   border-radius: 10px; /* Consistent border radius */
   box-shadow: inset 0px 0px 10px 5px rgba(0,0,0,0.6); /* Similar shadow effect */
   display: flex; /* Allow for additional styling using flexbox */
   align-items: center; /* Vertically center message content */
   justify-content: center;
-  /* width: 60%;
-  height: 25%; */
   margin: auto;
   font-family: 'Pricedown Bl', sans-serif;
-  /* position: fixed;  Added position: fixed */
-  /* top: 25%;  Position the alert vertically at 50% */
-  /* left: 50%;   Position the alert horizontally at 50% */
-  /* transform: translate(-50%, -50%);  Center the alert in the viewport */
   outline: none;
-
-  /* z-index: 9999; */
 }
 
 
 .alert-success {
-  /* background-color: #007f1e;
-  color: rgb(0, 0, 0) !important; */
   font-weight: bold !important;
 }
 
 .alert-info {
-  /* background-color: #009cb4;
-  color: rgb(0, 0, 0) !important; */
   align-items: center;
   font-weight: bold !important;
   min-width: 230px;
@@ -451,7 +405,6 @@ tbody tr:hover {
 .btn {
   background-color: #252524;
   border: 1.5px outset black !important;
-  /* box-shadow: inset 0px 0px 2.5px 1.25px rgba(0,0,0,0.6); */
   color: #FEAA63;
   font-family: 'Pricedown Bl', sans-serif;
   font-size: x-large;

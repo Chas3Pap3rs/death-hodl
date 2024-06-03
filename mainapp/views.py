@@ -137,8 +137,12 @@ def portfolio_view(request):
         api_url = f'https://api.coingecko.com/api/v3/coins/{crypto.id_from_api}'
         response = requests.get(api_url)
         data = response.json()
-        current_price = data['market_data']['current_price']['usd']
+        market_data = data.get('market_data', {})
+        current_price = Decimal(market_data.get('current_price', {}).get('usd', 0))
+        price_change_percentage_24h = market_data.get('price_change_percentage_24h_in_currency', {}).get('usd', 0)
         crypto.current_price = current_price
+        crypto.price_change_percentage_24h = price_change_percentage_24h
+        crypto.total_value = current_price * crypto.quantity  # calculate total value
         crypto.save()
 
     # Calculate the total value of the user's crypto holdings
@@ -189,12 +193,14 @@ def home_view(request):
         ids = [crypto.id_from_api for crypto in user_cryptocurrencies]
         prices=[]
         
+        
         # NOTE: Only showing the price change for the last 24 hours for now and not the percentage change to reduce the number of api calls. Only 10-20 api calls per minute are allowed for free users. Otherwise, I could have used the /coins/{id}/market_chart?vs_currency=usd&days=1 endpoint to get the price change for the last 24 hours and calculate the percentage change from that.
         for crytpo_id in ids:  
             prices_url = f'https://api.coingecko.com/api/v3/simple/price?ids={crytpo_id}&vs_currencies=usd&include_24hr_change=true'
             prices_data = requests.get(prices_url).json()
 
-            price_change = prices_data[crytpo_id]['usd_24h_change']
+            # price_change = prices_data[crytpo_id]['usd_24h_change']
+            price_change = prices_data.get(crytpo_id, {}).get('usd_24h_change', 0)
             prices.append(price_change)
             
         # make a dictionary out of the names and prices
@@ -481,72 +487,72 @@ def delete_account_view(request):
 
 #Possible function for future upgrade to include a charts page:
 
-def crypto_chart(request):
-  # Available cryptocurrencies (replace with your actual choices)
-  crypto_choices = [
-      ("bitcoin", "Bitcoin (BTC)"),
-      ("ethereum", "Ethereum (ETH)"),
-      ("bnb", "Binance Coin (BNB)"),
-  ]
+# def crypto_chart(request):
+#   # Available cryptocurrencies (replace with your actual choices)
+#   crypto_choices = [
+#       ("bitcoin", "Bitcoin (BTC)"),
+#       ("ethereum", "Ethereum (ETH)"),
+#       ("bnb", "Binance Coin (BNB)"),
+#   ]
 
-  # If form is submitted, process data
-  if request.method == 'POST':
-    cryptocurrency = request.POST.get('cryptocurrency')
-    start_date = request.POST.get('start_date')
-    end_date = request.POST.get('end_date')
+#   # If form is submitted, process data
+#   if request.method == 'POST':
+#     cryptocurrency = request.POST.get('cryptocurrency')
+#     start_date = request.POST.get('start_date')
+#     end_date = request.POST.get('end_date')
 
-    # API call with error handling
-    try:
-      url = f"https://api.coingecko.com/api/v3/coins/{cryptocurrency}/ohlcv/daily?from={start_date}&to={end_date}"
-      response = requests.get(url)
-      response.raise_for_status()  # Raise exception for non-200 status codes
+#     # API call with error handling
+#     try:
+#       url = f"https://api.coingecko.com/api/v3/coins/{cryptocurrency}/ohlcv/daily?from={start_date}&to={end_date}"
+#       response = requests.get(url)
+#       response.raise_for_status()  # Raise exception for non-200 status codes
 
-      # Parse JSON data
-      data = response.json()
-      timestamps, prices = zip(*data)
+#       # Parse JSON data
+#       data = response.json()
+#       timestamps, prices = zip(*data)
 
-      # Convert timestamps to datetime objects
-      df = pd.DataFrame({'timestamp': timestamps, 'price': prices})
-      df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+#       # Convert timestamps to datetime objects
+#       df = pd.DataFrame({'timestamp': timestamps, 'price': prices})
+#       df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
 
-      # Create candlestick chart with Plotly
-      candlestick = Candlestick(
-          x=df['timestamp'],
-          open=df['price'].iloc[:-1],  # Open price uses previous day's close
-          high=df['price'],
-          low=df['price'],
-          close=df['price'].iloc[1:],  # Close price uses next day's close
-      )
+#       # Create candlestick chart with Plotly
+#       candlestick = Candlestick(
+#           x=df['timestamp'],
+#           open=df['price'].iloc[:-1],  # Open price uses previous day's close
+#           high=df['price'],
+#           low=df['price'],
+#           close=df['price'].iloc[1:],  # Close price uses next day's close
+#       )
 
-      # Layout options (customize as needed)
-      layout = {
-          'title': f"{cryptocurrency.upper()} Price Chart",
-          'xaxis_title': 'Date',
-          'yaxis_title': 'Price (USD)',
-          'xaxis_rangeslider_visible': False,
-      }
+#       # Layout options (customize as needed)
+#       layout = {
+#           'title': f"{cryptocurrency.upper()} Price Chart",
+#           'xaxis_title': 'Date',
+#           'yaxis_title': 'Price (USD)',
+#           'xaxis_rangeslider_visible': False,
+#       }
 
-      # Generate chart as a div using Plotly offline capabilities
-      plot_div = plot({'data': [candlestick], 'layout': layout}, output_type='div', include_plotlyjs=False)
+#       # Generate chart as a div using Plotly offline capabilities
+#       plot_div = plot({'data': [candlestick], 'layout': layout}, output_type='div', include_plotlyjs=False)
 
-    except requests.exceptions.RequestException as e:
-      error_message = f"An error occurred fetching data: {e}"
-      plot_div = None
+#     except requests.exceptions.RequestException as e:
+#       error_message = f"An error occurred fetching data: {e}"
+#       plot_div = None
 
-  else:
-    # Initial form rendering
-    cryptocurrency = None
-    start_date = None
-    end_date = None
-    plot_div = None
-    error_message = None
+#   else:
+#     # Initial form rendering
+#     cryptocurrency = None
+#     start_date = None
+#     end_date = None
+#     plot_div = None
+#     error_message = None
 
-  return render(request, 'charts.html', {
-      'crypto_choices': crypto_choices,
-      'cryptocurrency': cryptocurrency,
-      'start_date': start_date,
-      'end_date': end_date,
-      'plot_div': plot_div,
-      'error_message': error_message,
-  })
+#   return render(request, 'charts.html', {
+#       'crypto_choices': crypto_choices,
+#       'cryptocurrency': cryptocurrency,
+#       'start_date': start_date,
+#       'end_date': end_date,
+#       'plot_div': plot_div,
+#       'error_message': error_message,
+#   })
 
