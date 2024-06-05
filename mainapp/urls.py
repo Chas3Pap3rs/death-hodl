@@ -22,7 +22,8 @@ urlpatterns = [
     path('trade_in_points/', views.trade_in_points, name='trade_in_points'),
 
     # charts page
-    # path('charts/', crypto_chart, name='charts'),
+    path('charts/', views.crypto_chart, name='charts'),
+    path('charts/<str:crypto_id>/', views.crypto_chart, name='charts_with_id'),
     
     # CRUD operations on cryptos
     path("buy/", views.buy_view, name="buy"),

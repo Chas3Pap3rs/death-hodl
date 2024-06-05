@@ -556,3 +556,11 @@ def delete_account_view(request):
 #       'error_message': error_message,
 #   })
 
+def crypto_chart(request):
+    # Replace with your chosen API's endpoint and parameters
+    api_url = "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=30"
+    response = requests.get(api_url)
+    price_data = response.json()["prices"]  # Parse the response based on your API's format
+
+    context = {"price_data": price_data}
+    return render(request, "charts.html", context)

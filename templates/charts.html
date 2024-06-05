@@ -1,53 +1,51 @@
-{% comment %} {% extends 'base.html' %}
+{% extends 'base.html' %}
+
 {% block title %}
 Crypto Charts
 {% endblock title %}
 
-<h2>Cryptocurrency Price Chart</h2>
+{% block content %}
+  
 
-{% if error_message %}
-  <div class="alert alert-danger" role="alert">
-    {{ error_message }}
-  </div>
-{% endif %}
+<div>
+  <h1>Bitcoin Price Chart (USD)</h1>
+  <canvas id="myChart"></canvas>
+</div>
 
-<form method="post">
-  {% csrf_token %}
-  <div class="form-group row">
-    <label for="cryptocurrency" class="col-sm-2 col-form-label">Cryptocurrency:</label>
-    <div class="col-sm-6">
-      <select name="cryptocurrency" id="cryptocurrency" class="form-control">
-        {% for code, name in crypto_choices %}
-          <option value="{{ code }}">{{ name }}</option>
-        {% endfor %}
-      </select>
-    </div>
-  </div>
-  <div class="form-group row">
-    <label for="start_date" class="col-sm-2 col-form-label">Start Date:</label>
-    <div class="col-sm-6">
-      <input type="date" name="start_date" id="start_date" class="form-control" required>
-    </div>
-  </div>
-  <div class="form-group row">
-    <label for="end_date" class="col-sm-2 col-form-label">End Date:</label>
-    <div class="col-sm-6">
-      <input type="date" name="end_date" id="end_date" class="form-control" required>
-    </div>
-  </div>
-  <div class="form-group row">
-    <div class="col-sm-10">
-      <button type="submit" class="btn btn-primary">Submit</button>
-    </div>
-  </div>
-</form>
+<script>
+  window.onload = function() {
+    var price_data = {{ price_data|safe }};
 
-<br>
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var chart = new Chart(ctx, {
+        type: 'line', // Choose your desired chart type
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Bitcoin Price (USD)',
+                data: [],
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            // Customize chart options (e.g., scales, legend)
+        }
+    });
 
-{% if plot_div %}
-  <div id='crypto-chart-container'>
-    {{ plot_div|safe }}
-  </div>
-{% endif %}
+    // Loop through price_data to populate labels and data arrays
+    let labels = [];
+    let dataPoints = [];
+    for (let item of price_data) {
+        labels.push(new Date(item[0]).toLocaleDateString()); // Format dates
+        dataPoints.push(item[1]); // Assuming prices are at index 1
+    }
+    chart.data.labels = labels;
+    chart.data.datasets[0].data = dataPoints;
+    chart.update();
+  }
+</script>
 
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script> {% endcomment %}
+
+{% endblock %}
