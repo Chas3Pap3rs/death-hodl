@@ -217,43 +217,103 @@ def home_view(request):
     return render(request, 'home.html', context)
 
 
+# @login_required(login_url="login")
+# def buy_view(request):
+    
+#     if request.method == 'POST':
+#         pass
+#     elif request.method == 'GET':  # Correct indentation (one level less)
+#         # Handle GET requests for displaying search results
+#         search_query = request.GET.get('search_query')  # Access query string parameter
+#         if not search_query:
+#             return HttpResponse('No crypto currency found based on your search query.')
+
+#         api_url = f'https://api.coingecko.com/api/v3/search?query={search_query}'
+#         response = requests.get(api_url)
+#         search_results = response.json()
+#         try:
+#             data = search_results['coins'][0]
+#         except IndexError:
+#             return HttpResponse('No crypto currency found based on your search query.')
+
+#         coin_id = data['id']
+#         image = data['large']
+#         symbol = data['symbol']
+#         market_cap = data['market_cap_rank']
+
+#         # Fetch the current price
+#         prices_url = f'https://api.coingecko.com/api/v3/simple/price?ids={coin_id}&vs_currencies=usd'
+#         prices_data = requests.get(prices_url).json()
+#         current_price = prices_data[coin_id]['usd']
+
+#         # check if the crypto currency is already in the users portfolio and pass that information to the template
+#         current_user = request.user
+#         is_already_in_portfolio = False
+#         if current_user.is_authenticated:
+#             user_cryptocurrencies = Cryptocurrency.objects.filter(user=current_user)
+#             for cryptocurrency in user_cryptocurrencies:
+#                 if cryptocurrency.name.lower() == coin_id.lower():
+#                     is_already_in_portfolio = True
+#                     break  # Exit the loop after finding a match
+
+#         # Get user's portfolio
+#         portfolio = Portfolio.objects.get(user=current_user)
+
+#         context = {
+#             'data': data,
+#             'coin_id': coin_id,
+#             'image': image,
+#             'symbol': symbol,
+#             'market_cap': market_cap,
+#             'current_price': current_price,
+#             'is_already_in_portfolio': is_already_in_portfolio,
+#             'portfolio': portfolio,
+#         }
+#         return render(request, 'buy.html', context)
+
+#     else:
+#         return HttpResponseNotAllowed(['GET', 'POST'])  # Explicitly allow both methods
+    
 @login_required(login_url="login")
 def buy_view(request):
-    if request.method == 'POST':
-        pass
-    elif request.method == 'GET':  # Correct indentation (one level less)
-        # Handle GET requests for displaying search results
-        search_query = request.GET.get('search_query')  # Access query string parameter
-        if not search_query:
-            return HttpResponse('No crypto currency found based on your search query.')
+    if request.method == 'GET':
+        # This could be a direct ID from charts.html or a search query from home.html
+        crypto_identifier = request.GET.get('search_query')
 
-        api_url = f'https://api.coingecko.com/api/v3/search?query={search_query}'
-        response = requests.get(api_url)
-        search_results = response.json()
-        try:
-            data = search_results['coins'][0]
-        except IndexError:
-            return HttpResponse('No crypto currency found based on your search query.')
+        if not crypto_identifier:
+            return HttpResponse('No cryptocurrency specified.')
 
+        # Try to fetch the cryptocurrency details directly assuming crypto_identifier is an ID
+        crypto_details_url = f'https://api.coingecko.com/api/v3/coins/{crypto_identifier}'
+        response = requests.get(crypto_details_url)
+        
+        if response.status_code == 200:
+            data = response.json()
+        else:
+            # If direct ID fetch fails, try to interpret crypto_identifier as a search term
+            search_url = f'https://api.coingecko.com/api/v3/search?query={crypto_identifier}'
+            search_response = requests.get(search_url)
+            search_results = search_response.json()
+            if not search_results.get('coins'):
+                return HttpResponse('No cryptocurrency found based on your search query.')
+            # Assuming the first result is the desired one
+            first_result = search_results['coins'][0]
+            crypto_details_url = f'https://api.coingecko.com/api/v3/coins/{first_result['id']}'
+            response = requests.get(crypto_details_url)
+            if response.status_code != 200:
+                return HttpResponse('No cryptocurrency found based on your search query.')
+            data = response.json()
+
+        # Extract necessary details from data...
         coin_id = data['id']
-        image = data['large']
+        image = data['image']['large']
         symbol = data['symbol']
-        market_cap = data['market_cap_rank']
+        market_cap = data['market_data']['market_cap_rank']
+        current_price = data['market_data']['current_price']['usd']
 
-        # Fetch the current price
-        prices_url = f'https://api.coingecko.com/api/v3/simple/price?ids={coin_id}&vs_currencies=usd'
-        prices_data = requests.get(prices_url).json()
-        current_price = prices_data[coin_id]['usd']
-
-        # check if the crypto currency is already in the users portfolio and pass that information to the template
+        # Check if the cryptocurrency is already in the user's portfolio
         current_user = request.user
-        is_already_in_portfolio = False
-        if current_user.is_authenticated:
-            user_cryptocurrencies = Cryptocurrency.objects.filter(user=current_user)
-            for cryptocurrency in user_cryptocurrencies:
-                if cryptocurrency.name.lower() == coin_id.lower():
-                    is_already_in_portfolio = True
-                    break  # Exit the loop after finding a match
+        is_already_in_portfolio = Cryptocurrency.objects.filter(user=current_user, id_from_api=coin_id).exists()
 
         # Get user's portfolio
         portfolio = Portfolio.objects.get(user=current_user)
@@ -271,9 +331,7 @@ def buy_view(request):
         return render(request, 'buy.html', context)
 
     else:
-        return HttpResponseNotAllowed(['GET', 'POST'])  # Explicitly allow both methods
-    
-   
+        return HttpResponseNotAllowed(['GET'])
 
 @login_required(login_url="login")
 def sell_view(request, pk):

@@ -503,3 +503,12 @@ tbody tr:hover {
   font-family: 'Pricedown Bl', sans-serif;
 }
 
+.crypto-chart-header {
+  display: flex;        /* Enables Flexbox */
+  align-items: center;  /* Vertically centers the items in the container */
+  justify-content: space-between; /* Distributes space between and around content items */
+}
+
+.crypto-chart-header h1 {
+  margin-right: 20px; /* Adds some space between the header and the button */
+}

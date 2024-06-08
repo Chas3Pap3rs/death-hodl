@@ -8,7 +8,10 @@ Crypto Charts
   
 
 <div>
-  <h1>Price Charts (USD)</h1>
+  <div class="crypto-chart-header">
+    <h1>Price Charts (USD)</h1>
+    <a href="{% url 'buy' %}?search_query={{ crypto_id }}" class="btn btn-buy" id="buyButton">Buy {{ crypto_name }}</a>
+  </div>
   <canvas id="myChart"></canvas>
 </div>
 
@@ -43,6 +46,7 @@ Crypto Charts
   window.onload = function() {
     var price_data = {{ price_data|safe }};
     var crypto_name = "{{ crypto_name }}";  // Get the crypto name from the Django context
+    var crypto_id = "{{ crypto_id }}";  // Get the crypto id from the Django context
     crypto_name = crypto_name.charAt(0).toUpperCase() + crypto_name.slice(1);
 
     var ctx = document.getElementById('myChart').getContext('2d');
@@ -77,6 +81,13 @@ Crypto Charts
     // Event listener for the dropdown
     document.getElementById('crypto-select').addEventListener('change', function() {
       var selectedCryptoId = this.value;
+      var selectedCryptoName = this.options[this.selectedIndex].text;
+
+      // Update the Buy button link and text
+      var buyButton = document.getElementById('buyButton');
+      buyButton.href = `{% url 'buy' %}?search_query=${selectedCryptoId}`;
+      buyButton.textContent = 'Buy ' + selectedCryptoName;
+
       if (selectedCryptoId && selectedCryptoId.trim()) {
         fetch(`/charts/${selectedCryptoId}/`, {
           headers: {
