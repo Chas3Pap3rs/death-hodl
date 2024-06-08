@@ -482,15 +482,15 @@ def delete_account_view(request):
     messages.success(request, 'Your account has been deleted.')
     return redirect('home')
 
+
 def crypto_chart(request, crypto_id=None):
     # Fetch the list of all cryptos for the dropdown
     top_crypto_url_global = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=USD&order=market_cap_desc&per_page=25&page=1&sparkline=false'
     top_crypto_data_global = requests.get(top_crypto_url_global).json()
 
-    # If no crypto_id is provided, default to the top crypto and redirect
+    # If no crypto_id is provided, default to the top crypto
     if not crypto_id:
         crypto_id = top_crypto_data_global[0]['id']
-        return redirect('crypto_chart', crypto_id=crypto_id)  # Assuming 'crypto_chart' is the name of the URL pattern for this view
 
     # Use the crypto_id to fetch chart data
     api_url = f"https://api.coingecko.com/api/v3/coins/{crypto_id}/market_chart?vs_currency=usd&days=30"
@@ -510,3 +510,5 @@ def crypto_chart(request, crypto_id=None):
     else:
         # Otherwise, render the template
         return render(request, 'charts.html', context)
+    
+    
