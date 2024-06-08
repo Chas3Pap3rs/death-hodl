@@ -20,6 +20,9 @@
                {% if request.resolver_match.url_name != 'portfolio' %}
                  <a class="portfolio btn btn-outline-light my-2 my-sm-0 mr-2" href="{% url 'portfolio' %}">View My Wallet</a>
                {% endif %}
+               {% if request.resolver_match.url_name != 'crypto_chart' %}
+               <a class="charts btn btn-outline-light my-2 my-sm-0 mr-2" href="{% url 'crypto_chart' 'bitcoin' %}">Charts</a>
+               {% endif %}
                <a class="logout btn btn-outline-light my-2 my-sm-0 mr-2" href="{% url 'logout' %}">Logout</a>  
              </div>
              {% else %}

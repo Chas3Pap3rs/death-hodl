@@ -16,9 +16,9 @@ Crypto Charts
   <label for="crypto-select">Select Cryptocurrency:</label>
   <select class="form-control" id="crypto-select">
     {% for crypto in all_cryptos %}
-      <option class="dropdown-list" value="{{ crypto.id_from_api }}" {% if crypto.id_from_api == top_crypto_id %}selected{% endif %}>{{ crypto.name }}</option>
+      <option class="dropdown-list" value="{{ crypto.id }}" {% if crypto.id == crypto_id %}selected{% endif %}>{{ crypto.name }}</option>
     {% endfor %}
-  </select>
+</select>
 </div>
 
 <script>
