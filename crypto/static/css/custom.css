@@ -411,6 +411,7 @@ tbody tr:hover {
 }
 
 .btn.btn-search {
+  z-index: -1;
   color: #FEAA63;
 }
 
@@ -491,7 +492,12 @@ tbody tr:hover {
 
 }
 
-.crypto-dropdown.mb-3, .dropdown-list, .form-control {
+.crypto-dropdown.mb-3, 
+.dropdown-list, 
+.form-control, 
+.crypto-search-input,
+.crypto-search.mt-3.mb-3 {
+
   color: #FEAA63;
   font-size: large;
   font-family: 'Pricedown Bl', sans-serif;

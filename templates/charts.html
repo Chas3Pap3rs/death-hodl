@@ -13,13 +13,29 @@ Crypto Charts
 </div>
 
 <div class="crypto-dropdown mb-3">
-  <label for="crypto-select">Select Cryptocurrency:</label>
+  <label for="crypto-select">Select/Search Cryptocurrency:</label>
   <select class="form-control" id="crypto-select">
     {% for crypto in all_cryptos %}
       <option class="dropdown-list" value="{{ crypto.id }}" {% if crypto.id == crypto_id %}selected{% endif %}>{{ crypto.name }}</option>
     {% endfor %}
 </select>
 </div>
+
+<!-- Search Bar for Cryptocurrency -->
+<div class="crypto-search mt-3 mb-3">
+  {% comment %} <label for="crypto-search-input">Search Cryptocurrency:</label> {% endcomment %}
+  <form action="{% url 'crypto_chart_search' %}" method="get">
+    <div class="input-group">
+      <input type="text" class="form-control" id="crypto-search-input" name="crypto_id" placeholder="Search cryptocurrencies..." required>
+      <div class="input-group-append"> &nbsp;&nbsp;
+        <button type="submit" class="btn btn-search">Search</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+
+
 
 <script>
   var chart;  // Declare chart variable outside the window.onload function

@@ -23,6 +23,7 @@ urlpatterns = [
 
     # charts page
     path('charts/', views.crypto_chart, name='charts'),
+    path('charts/search/', views.crypto_chart, name='crypto_chart_search'),
     path('charts/<str:crypto_id>/', views.crypto_chart, name='crypto_chart'),
     
     # CRUD operations on cryptos
