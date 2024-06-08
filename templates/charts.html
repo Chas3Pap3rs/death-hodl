@@ -8,21 +8,34 @@ Crypto Charts
   
 
 <div>
-  <h1>Bitcoin Price Chart (USD)</h1>
+  <h1>Price Charts (USD)</h1>
   <canvas id="myChart"></canvas>
 </div>
 
+<div class="crypto-dropdown mb-3">
+  <label for="crypto-select">Select Cryptocurrency:</label>
+  <select class="form-control" id="crypto-select">
+    {% for crypto in all_cryptos %}
+      <option class="dropdown-list" value="{{ crypto.id_from_api }}" {% if crypto.id_from_api == top_crypto_id %}selected{% endif %}>{{ crypto.name }}</option>
+    {% endfor %}
+  </select>
+</div>
+
 <script>
+  var chart;  // Declare chart variable outside the window.onload function
+
   window.onload = function() {
     var price_data = {{ price_data|safe }};
+    var crypto_name = "{{ crypto_name }}";  // Get the crypto name from the Django context
+    crypto_name = crypto_name.charAt(0).toUpperCase() + crypto_name.slice(1);
 
     var ctx = document.getElementById('myChart').getContext('2d');
-    var chart = new Chart(ctx, {
+    chart = new Chart(ctx, {
         type: 'line', // Choose your desired chart type
         data: {
             labels: [],
             datasets: [{
-                label: 'Bitcoin Price (USD)',
+                label: crypto_name + ' Price (USD)',  // Use the crypto_name variable
                 data: [],
                 backgroundColor: 'rgba(255, 99, 132, 0.2)',
                 borderColor: 'rgba(255, 99, 132, 1)',
@@ -34,18 +47,54 @@ Crypto Charts
         }
     });
 
-    // Loop through price_data to populate labels and data arrays
-    let labels = [];
-    let dataPoints = [];
+    // Populate initial chart data
+    let initialLabels = [];
+    let initialDataPoints = [];
     for (let item of price_data) {
-        labels.push(new Date(item[0]).toLocaleDateString()); // Format dates
-        dataPoints.push(item[1]); // Assuming prices are at index 1
+        initialLabels.push(new Date(item[0]).toLocaleDateString()); // Format dates
+        initialDataPoints.push(item[1]); // Assuming prices are at index 1
     }
-    chart.data.labels = labels;
-    chart.data.datasets[0].data = dataPoints;
+    chart.data.labels = initialLabels;
+    chart.data.datasets[0].data = initialDataPoints;
     chart.update();
+
+    // Event listener for the dropdown
+    document.getElementById('crypto-select').addEventListener('change', function() {
+      var selectedCryptoId = this.value;
+      if (selectedCryptoId && selectedCryptoId.trim()) {
+        fetch(`/charts/${selectedCryptoId}/`, {
+          headers: {
+            'Accept': 'application/json'
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          // Update the chart with the new data
+          let labels = [];
+          let dataPoints = [];
+          for (let item of data.price_data) {
+            labels.push(new Date(item[0]).toLocaleDateString()); // Format dates
+            dataPoints.push(item[1]); // Assuming prices are at index 1
+          }
+
+          // Update the chart's label
+          let selectedCryptoName = this.options[this.selectedIndex].text;
+          chart.data.datasets[0].label = selectedCryptoName + ' Price (USD)';
+  
+          // Assuming 'chart' is the variable holding your Chart.js instance
+          chart.data.labels = labels;
+          chart.data.datasets[0].data = dataPoints;
+          chart.update();
+
+          // Update the URL in the browser without reloading the page
+          history.pushState(null, '', `/charts/${selectedCryptoId}/`);
+        })
+        .catch(error => {
+          console.error('There has been a problem with your fetch operation:', error);
+        });
+      }
+    });
   }
 </script>
-
 
 {% endblock %}

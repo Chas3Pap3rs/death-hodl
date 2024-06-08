@@ -490,3 +490,10 @@ tbody tr:hover {
   color: #1A773F;
 
 }
+
+.crypto-dropdown.mb-3, .dropdown-list, .form-control {
+  color: #FEAA63;
+  font-size: large;
+  font-family: 'Pricedown Bl', sans-serif;
+}
+

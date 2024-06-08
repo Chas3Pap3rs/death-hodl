@@ -177,7 +177,6 @@ def portfolio_view(request):
 def home_view(request):
     # get the top crypto currencies by market cap
     top_crypto_url_global = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=USD&order=market_cap_desc&per_page=&page=1&sparkline=true'
-    # top_crypto_url_global = 'https://api.binance.us'
     top_crypto_data_global = requests.get(top_crypto_url_global).json()
 
     # check if user is logged in    
@@ -483,84 +482,31 @@ def delete_account_view(request):
     messages.success(request, 'Your account has been deleted.')
     return redirect('home')
 
+def crypto_chart(request, crypto_id=None):
+    # Fetch the list of all cryptos for the dropdown
+    top_crypto_url_global = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=USD&order=market_cap_desc&per_page=25&page=1&sparkline=false'
+    top_crypto_data_global = requests.get(top_crypto_url_global).json()
 
+    # If no crypto_id is provided, default to the top crypto and redirect
+    if not crypto_id:
+        crypto_id = top_crypto_data_global[0]['id']
+        return redirect('crypto_chart', crypto_id=crypto_id)  # Assuming 'crypto_chart' is the name of the URL pattern for this view
 
-#Possible function for future upgrade to include a charts page:
-
-# def crypto_chart(request):
-#   # Available cryptocurrencies (replace with your actual choices)
-#   crypto_choices = [
-#       ("bitcoin", "Bitcoin (BTC)"),
-#       ("ethereum", "Ethereum (ETH)"),
-#       ("bnb", "Binance Coin (BNB)"),
-#   ]
-
-#   # If form is submitted, process data
-#   if request.method == 'POST':
-#     cryptocurrency = request.POST.get('cryptocurrency')
-#     start_date = request.POST.get('start_date')
-#     end_date = request.POST.get('end_date')
-
-#     # API call with error handling
-#     try:
-#       url = f"https://api.coingecko.com/api/v3/coins/{cryptocurrency}/ohlcv/daily?from={start_date}&to={end_date}"
-#       response = requests.get(url)
-#       response.raise_for_status()  # Raise exception for non-200 status codes
-
-#       # Parse JSON data
-#       data = response.json()
-#       timestamps, prices = zip(*data)
-
-#       # Convert timestamps to datetime objects
-#       df = pd.DataFrame({'timestamp': timestamps, 'price': prices})
-#       df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
-
-#       # Create candlestick chart with Plotly
-#       candlestick = Candlestick(
-#           x=df['timestamp'],
-#           open=df['price'].iloc[:-1],  # Open price uses previous day's close
-#           high=df['price'],
-#           low=df['price'],
-#           close=df['price'].iloc[1:],  # Close price uses next day's close
-#       )
-
-#       # Layout options (customize as needed)
-#       layout = {
-#           'title': f"{cryptocurrency.upper()} Price Chart",
-#           'xaxis_title': 'Date',
-#           'yaxis_title': 'Price (USD)',
-#           'xaxis_rangeslider_visible': False,
-#       }
-
-#       # Generate chart as a div using Plotly offline capabilities
-#       plot_div = plot({'data': [candlestick], 'layout': layout}, output_type='div', include_plotlyjs=False)
-
-#     except requests.exceptions.RequestException as e:
-#       error_message = f"An error occurred fetching data: {e}"
-#       plot_div = None
-
-#   else:
-#     # Initial form rendering
-#     cryptocurrency = None
-#     start_date = None
-#     end_date = None
-#     plot_div = None
-#     error_message = None
-
-#   return render(request, 'charts.html', {
-#       'crypto_choices': crypto_choices,
-#       'cryptocurrency': cryptocurrency,
-#       'start_date': start_date,
-#       'end_date': end_date,
-#       'plot_div': plot_div,
-#       'error_message': error_message,
-#   })
-
-def crypto_chart(request):
-    # Replace with your chosen API's endpoint and parameters
-    api_url = "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=30"
+    # Use the crypto_id to fetch chart data
+    api_url = f"https://api.coingecko.com/api/v3/coins/{crypto_id}/market_chart?vs_currency=usd&days=30"
     response = requests.get(api_url)
-    price_data = response.json()["prices"]  # Parse the response based on your API's format
 
-    context = {"price_data": price_data}
-    return render(request, "charts.html", context)
+    # Check for successful response
+    if response.status_code == 200:
+        price_data = response.json()["prices"]  # Parse the response based on your API's format
+        crypto_name = next((item['name'] for item in top_crypto_data_global if item['id'] == crypto_id), "Unknown")
+        context = {"price_data": price_data, "all_cryptos": top_crypto_data_global, "crypto_name": crypto_name, "crypto_id": crypto_id}
+    else:
+        context = {"error": "Error fetching chart data", "all_cryptos": top_crypto_data_global}  # Handle error
+
+    if request.headers.get('Accept') == 'application/json':
+        # If it's a fetch request, return a JSON response
+        return JsonResponse(context)
+    else:
+        # Otherwise, render the template
+        return render(request, 'charts.html', context)
