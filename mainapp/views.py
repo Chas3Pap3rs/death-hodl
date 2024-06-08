@@ -491,13 +491,16 @@ def crypto_chart(request, crypto_id=None):
     # Handle search query if present
     crypto_query = request.GET.get('crypto_id', None)
     if crypto_query:
-        # Attempt to find by ID or name
-        crypto = next((item for item in top_crypto_data_global if item['id'] == crypto_query or item['name'].lower() == crypto_query.lower()), None)
-        if crypto:
-            return redirect('crypto_chart', crypto_id=crypto['id'])
+        # Use the search endpoint to find by ID, symbol, or name
+        search_url = f'https://api.coingecko.com/api/v3/search?query={crypto_query}'
+        search_response = requests.get(search_url).json()
+        coins = search_response.get('coins', [])
+        if coins:
+            # Redirect to the first match's detailed view
+            return redirect('crypto_chart', crypto_id=coins[0]['id'])
         else:
             # If no match found, show an error and redirect to the top crypto
-            messages.error(request, 'No cryptocurrency found with that ID or name')
+            messages.error(request, 'No cryptocurrency found with that ID, symbol, or name')
             return redirect('crypto_chart', crypto_id=top_crypto_data_global[0]['id'])
 
     # If no crypto_id is provided, default to the top crypto and redirect
@@ -508,10 +511,16 @@ def crypto_chart(request, crypto_id=None):
     # Use the crypto_id to fetch chart data
     api_url = f"https://api.coingecko.com/api/v3/coins/{crypto_id}/market_chart?vs_currency=usd&days=30"
     response = requests.get(api_url)
-
     if response.status_code == 200:
         price_data = response.json()["prices"]
-        crypto_name = next((item['name'] for item in top_crypto_data_global if item['id'] == crypto_id), "Unknown")
+        # Fetch the full details of the cryptocurrency to ensure the name is always correct
+        crypto_details_url = f"https://api.coingecko.com/api/v3/coins/{crypto_id}"
+        crypto_details_response = requests.get(crypto_details_url)
+        if crypto_details_response.status_code == 200:
+            crypto_details = crypto_details_response.json()
+            crypto_name = crypto_details['name']
+        else:
+            crypto_name = "Unknown"  # Fallback if the details fetch fails
         context = {
             "price_data": price_data,
             "all_cryptos": top_crypto_data_global,
