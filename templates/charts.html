@@ -10,7 +10,9 @@ Crypto Charts
 <div>
   <div class="crypto-chart-header">
     <h1>Price Charts (USD)</h1>
+    {% if request.user.is_authenticated %}
     <a href="{% url 'buy' %}?search_query={{ crypto_id }}" class="btn btn-buy" id="buyButton">Buy {{ crypto_name }}</a>
+    {% endif %}
   </div>
   <canvas id="myChart"></canvas>
 </div>
